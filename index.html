@@ -31,16 +31,32 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .topbar{
   position:fixed;top:0;left:0;right:0;height:var(--top-h);
   background:var(--s1);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;z-index:50
+  display:flex;align-items:center;gap:8px;
+  padding:0 12px;z-index:50
 }
-.topbar-title{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.topbar-title{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0}
+.topbar-date{
+  background:var(--s3);border:1px solid var(--border2);color:var(--text);
+  font-family:'Golos Text',sans-serif;font-size:12px;font-weight:600;
+  padding:5px 10px;border-radius:14px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;flex-shrink:0;
+  transition:background .12s
+}
+.topbar-date:active{background:var(--s4)}
+.topbar-right{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
 .topbar-badge{
-  font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;
+  font-size:10px;font-weight:600;padding:4px 8px;border-radius:14px;
   background:var(--s3);color:var(--muted2);border:1px solid var(--border2);
-  transition:all .2s
+  transition:all .2s;white-space:nowrap
 }
 .topbar-badge.has-sel{background:rgba(46,204,138,.15);color:var(--green);border-color:rgba(46,204,138,.3)}
+.topbar-icon{
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:var(--s3);color:var(--text);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:background .12s
+}
+.topbar-icon:active{background:var(--s4)}
 
 /* ── SCROLL AREA ── */
 .screen{
@@ -238,7 +254,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .portion-unit{
   font-size:13px;color:var(--muted);text-align:center;margin-top:5px
 }
-.portion-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.portion-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.portion-meal-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:8px}
+.portion-meals{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.portion-meal{
+  flex:1 1 calc(50% - 3px);min-width:0;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 8px;border-radius:10px;
+  background:var(--s3);border:1.5px solid var(--border2);color:var(--muted2);
+  font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer;
+  transition:all .12s;-webkit-tap-highlight-color:transparent
+}
+.portion-meal.active{background:rgba(31,208,232,.14);color:var(--teal);border-color:rgba(31,208,232,.4)}
+.portion-meal:active{opacity:.75}
 .portion-preset{
   font-size:12px;padding:6px 12px;border-radius:20px;
   background:var(--s3);border:1px solid var(--border2);
@@ -308,6 +336,93 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .modal-add-btn.add{background:var(--green);color:#0b0f18}
 .modal-add-btn.remove{background:var(--s3);color:var(--red);border:1px solid rgba(232,82,74,.3)}
 
+/* meal head on Analysis */
+.meal-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 4px 6px;margin-top:6px
+}
+.meal-head:first-child{margin-top:0}
+.meal-head-l{display:flex;align-items:center;gap:7px;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+.meal-head-r{font-size:11px;color:var(--muted);font-weight:500}
+
+/* custom product add button (top of Products tab) */
+.custom-add-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;margin-bottom:10px;border-radius:12px;
+  background:var(--s2);border:1.5px dashed var(--border2);color:var(--muted2);
+  font-family:'Golos Text',sans-serif;font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .15s;-webkit-tap-highlight-color:transparent
+}
+.custom-add-btn:active{background:var(--s3);color:var(--text);border-color:var(--teal)}
+
+/* generic dialog (profile, calendar, custom product) */
+.dlg-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
+  z-index:350;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px)
+}
+.dlg-overlay.open{display:flex}
+.dlg-sheet{
+  background:var(--s2);border-radius:20px 20px 0 0;
+  width:100%;max-height:90vh;overflow-y:auto;
+  padding-bottom:calc(16px + var(--safe-bottom));
+  animation:slideUp .22s ease
+}
+.dlg-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 8px}
+.dlg-head{padding:12px 20px;border-bottom:1px solid var(--border)}
+.dlg-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;color:var(--text)}
+.dlg-sub{font-size:12px;color:var(--muted2);margin-top:4px;line-height:1.4}
+.dlg-body{padding:16px 20px}
+.dlg-body .field{margin-bottom:14px}
+.dlg-body .field-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:6px;display:block}
+.dlg-body input[type=text],.dlg-body input[type=number],.dlg-body select{
+  width:100%;height:42px;padding:0 12px;border-radius:10px;
+  background:var(--s3);border:1.5px solid var(--border2);color:var(--text);
+  font-family:'Golos Text',sans-serif;font-size:14px;outline:none;
+  transition:border-color .15s
+}
+.dlg-body input:focus,.dlg-body select:focus{border-color:var(--teal)}
+.dlg-row{display:flex;gap:8px}
+.dlg-row .field{flex:1}
+.dlg-radio{display:flex;gap:6px;flex-wrap:wrap}
+.dlg-radio button{
+  flex:1 1 calc(50% - 3px);padding:10px;border-radius:10px;
+  background:var(--s3);border:1.5px solid var(--border2);color:var(--muted2);
+  font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:all .12s
+}
+.dlg-radio button.active{background:rgba(31,208,232,.14);color:var(--teal);border-color:rgba(31,208,232,.4)}
+.dlg-btns{display:flex;gap:10px;padding:8px 20px 0}
+.dlg-btn-primary{flex:1;height:48px;border-radius:14px;border:none;background:var(--green);color:#0b0f18;font-family:'Golos Text',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .12s}
+.dlg-btn-primary:active{opacity:.8}
+.dlg-btn-secondary{height:48px;padding:0 20px;border-radius:14px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Golos Text',sans-serif;font-size:15px;cursor:pointer}
+.dlg-norm-preview{
+  background:rgba(31,208,232,.08);border:1px solid rgba(31,208,232,.25);
+  border-radius:12px;padding:12px;margin-top:8px;font-size:12px;color:var(--muted2);line-height:1.6
+}
+.dlg-norm-preview b{color:var(--teal);font-weight:600}
+
+/* calendar grid */
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+.cal-nav button{width:32px;height:32px;border-radius:50%;border:1px solid var(--border2);background:var(--s3);color:var(--text);font-size:14px;cursor:pointer}
+.cal-month{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:600;color:var(--text);flex:1;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:10px;color:var(--muted);padding:4px 0;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.cal-day{
+  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-radius:10px;background:var(--s3);color:var(--text);font-size:14px;
+  border:1.5px solid transparent;cursor:pointer;position:relative;
+  -webkit-tap-highlight-color:transparent;transition:all .12s
+}
+.cal-day.empty{background:transparent;cursor:default}
+.cal-day.has-data{background:var(--s4)}
+.cal-day.today{border-color:var(--teal)}
+.cal-day.selected{background:var(--green);color:#0b0f18}
+.cal-day.future{opacity:.4;cursor:default}
+.cal-day-num{font-weight:600}
+.cal-day-kcal{font-size:9px;font-weight:500;color:var(--muted);margin-top:1px}
+.cal-day.selected .cal-day-kcal{color:rgba(11,15,24,.7)}
+
 /* scrollbar */
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--s4);border-radius:2px}
@@ -316,8 +431,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 <body>
 
 <div class="topbar">
-  <div class="topbar-title">🌿 Рацион Сахалина</div>
-  <div class="topbar-badge" id="topBadge">Ничего не выбрано</div>
+  <div class="topbar-title">🌿 Рацион</div>
+  <button class="topbar-date" id="topDate" onclick="openCalendar()">📅 Сегодня</button>
+  <div class="topbar-right">
+    <div class="topbar-badge" id="topBadge">Пусто</div>
+    <button class="topbar-icon" id="topProfile" onclick="openProfileDialog()" title="Профиль">⚙️</button>
+  </div>
 </div>
 
 <!-- SCREENS -->
@@ -367,8 +486,151 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       </div>
       <div class="portion-unit" id="pUnit"></div>
       <div class="portion-presets" id="pPresets"></div>
+      <div class="portion-meal-label">Приём пищи</div>
+      <div class="portion-meals" id="pMeals"></div>
     </div>
     <div class="portion-btns" id="pBtns"></div>
+  </div>
+</div>
+
+<!-- PROFILE DIALOG -->
+<div class="dlg-overlay" id="profileDlg" onclick="if(event.target===this) closeDialog('profileDlg')">
+  <div class="dlg-sheet">
+    <div class="dlg-handle"></div>
+    <div class="dlg-head">
+      <div class="dlg-title">⚙️ Профиль</div>
+      <div class="dlg-sub">Считаем твою норму калорий по формуле Миффлина–Сан-Жеора. Все поля обязательны.</div>
+    </div>
+    <div class="dlg-body">
+      <div class="field">
+        <label class="field-label">Имя (необязательно)</label>
+        <input type="text" id="prfName" placeholder="Как тебя звать?">
+      </div>
+      <div class="field">
+        <label class="field-label">Пол</label>
+        <div class="dlg-radio" id="prfGender">
+          <button data-v="m">Мужчина</button>
+          <button data-v="f">Женщина</button>
+        </div>
+      </div>
+      <div class="dlg-row">
+        <div class="field">
+          <label class="field-label">Возраст</label>
+          <input type="number" id="prfAge" min="14" max="100" placeholder="лет">
+        </div>
+        <div class="field">
+          <label class="field-label">Рост</label>
+          <input type="number" id="prfHeight" min="120" max="230" placeholder="см">
+        </div>
+        <div class="field">
+          <label class="field-label">Вес</label>
+          <input type="number" id="prfWeight" min="30" max="200" placeholder="кг">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Уровень активности</label>
+        <select id="prfActivity"></select>
+      </div>
+      <div class="field">
+        <label class="field-label">Цель</label>
+        <div class="dlg-radio" id="prfGoal">
+          <button data-v="lose">📉 Похудение</button>
+          <button data-v="maintain">⚖️ Поддержание</button>
+          <button data-v="gain">📈 Набор массы</button>
+        </div>
+      </div>
+      <div class="dlg-norm-preview" id="prfPreview">Заполни поля — здесь появится твоя дневная норма.</div>
+    </div>
+    <div class="dlg-btns">
+      <button class="dlg-btn-secondary" onclick="closeDialog('profileDlg')">Отмена</button>
+      <button class="dlg-btn-primary" onclick="saveProfile()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR DIALOG -->
+<div class="dlg-overlay" id="calDlg" onclick="if(event.target===this) closeDialog('calDlg')">
+  <div class="dlg-sheet">
+    <div class="dlg-handle"></div>
+    <div class="dlg-head">
+      <div class="dlg-title">📅 История</div>
+      <div class="dlg-sub">Выбери день, чтобы посмотреть или дополнить рацион.</div>
+    </div>
+    <div class="dlg-body">
+      <div class="cal-nav">
+        <button onclick="calNav(-1)">‹</button>
+        <div class="cal-month" id="calMonthLabel"></div>
+        <button onclick="calNav(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="dlg-btns">
+      <button class="dlg-btn-secondary" onclick="calJumpToday()">Сегодня</button>
+      <button class="dlg-btn-primary" onclick="closeDialog('calDlg')">Готово</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM PRODUCT DIALOG -->
+<div class="dlg-overlay" id="customDlg" onclick="if(event.target===this) closeDialog('customDlg')">
+  <div class="dlg-sheet">
+    <div class="dlg-handle"></div>
+    <div class="dlg-head">
+      <div class="dlg-title">✏️ Произвольный продукт</div>
+      <div class="dlg-sub">Для еды, которой нет в каталоге (пицца, ресторан, сложное блюдо). Введи цифры с упаковки или прикинь.</div>
+    </div>
+    <div class="dlg-body">
+      <div class="field">
+        <label class="field-label">Название</label>
+        <input type="text" id="cpName" placeholder="Например, Пицца «Пепперони»">
+      </div>
+      <div class="dlg-row">
+        <div class="field">
+          <label class="field-label">Порция, г</label>
+          <input type="number" id="cpPortion" min="1" placeholder="200">
+        </div>
+        <div class="field">
+          <label class="field-label">Ккал на 100 г</label>
+          <input type="number" id="cpKcal" min="0" placeholder="280">
+        </div>
+      </div>
+      <div class="dlg-row">
+        <div class="field">
+          <label class="field-label">Б, г/100</label>
+          <input type="number" id="cpProtein" min="0" step="0.1" placeholder="11">
+        </div>
+        <div class="field">
+          <label class="field-label">Ж, г/100</label>
+          <input type="number" id="cpFat" min="0" step="0.1" placeholder="10">
+        </div>
+        <div class="field">
+          <label class="field-label">У, г/100</label>
+          <input type="number" id="cpCarbs" min="0" step="0.1" placeholder="35">
+        </div>
+      </div>
+      <div class="dlg-row">
+        <div class="field">
+          <label class="field-label">Клетч., г/100</label>
+          <input type="number" id="cpFiber" min="0" step="0.1" placeholder="2">
+        </div>
+        <div class="field">
+          <label class="field-label">Сахар, г/100</label>
+          <input type="number" id="cpSugar" min="0" step="0.1" placeholder="4">
+        </div>
+        <div class="field">
+          <label class="field-label">Натрий, мг/100</label>
+          <input type="number" id="cpSodium" min="0" placeholder="600">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Приём пищи</label>
+        <div class="dlg-radio" id="cpMeal"></div>
+      </div>
+    </div>
+    <div class="dlg-btns">
+      <button class="dlg-btn-secondary" onclick="closeDialog('customDlg')">Отмена</button>
+      <button class="dlg-btn-primary" onclick="saveCustomProduct()">Добавить</button>
+    </div>
   </div>
 </div>
 
@@ -630,43 +892,150 @@ const GAPS_DEF=[
   {nutKey:'mag',name:'Магний',baseSev:'part',descBase:'Стресс и кофе вымывают. Дефицит — спазмы, тревога, плохой сон.',descSolved:'Магний покрыт. Принимай вечером — усиливает сон.',solvers:['magnesium','buckwheat','hemp','pumpkin'],partials:['sesame','millet','lentil','nettle','kelp'],tips:['Глицинат/малат — лучшие формы'],srcsLabel:{magnesium:'БАД магний ✓',buckwheat:'Гречка ✓',hemp:'Конопля ✓',pumpkin:'Тыкв. семечки ✓',sesame:'Кунжут (частично)'}},
 ];
 
+// ─── DATE / ID HELPERS ───────────────────────────────────────────────────────
+function todayKey(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function makeId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function dateLabel(key){
+  if(key===todayKey()) return 'Сегодня';
+  const t=new Date(); t.setDate(t.getDate()-1);
+  const yest=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  if(key===yest) return 'Вчера';
+  const d=new Date(key+'T00:00:00');
+  return d.getDate()+' '+['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];
+}
+
+// ─── MEALS ───────────────────────────────────────────────────────────────────
+const MEALS=[
+  {id:'breakfast',label:'Завтрак',  icon:'🌅',hours:[5,6,7,8,9,10]},
+  {id:'lunch',    label:'Обед',     icon:'☀️',hours:[11,12,13,14,15]},
+  {id:'snack',    label:'Перекус',  icon:'🍪',hours:[16,17]},
+  {id:'dinner',   label:'Ужин',     icon:'🌆',hours:[18,19,20,21,22,23,0,1,2,3,4]},
+];
+function defaultMealForNow(){
+  const h=new Date().getHours();
+  return (MEALS.find(m=>m.hours.includes(h))||MEALS[1]).id;
+}
+function mealLabel(id){const m=MEALS.find(x=>x.id===id);return m?`${m.icon} ${m.label}`:id;}
+
 // ─── STATE ───────────────────────────────────────────────────────────────────
-const selected=new Set();       // keys of selected products
-const portions={};              // k -> actual amount entered by user
+// New model: entries by date, each entry has id/key/portion/meal, custom field
+// for free-form products. Profile drives daily norms.
+let entriesByDate={};       // { 'YYYY-MM-DD': [ {id, key, portion, meal} ... ] }
+let currentDate=todayKey(); // which day is being viewed
+let profile=null;           // {name, gender, age, heightCm, weightKg, activity, goal}
 let currentTab='products';
 let modalKey=null;
-let portionKey=null;            // which product is being portioned right now
+let portionDlg=null;        // open dialog state: {mode:'add'|'edit', key, entryId?, custom?}
+
+// Entries on the currently-viewed day
+function getEntries(){return entriesByDate[currentDate]||[];}
+function setEntries(arr){
+  if(arr.length===0) delete entriesByDate[currentDate];
+  else entriesByDate[currentDate]=arr;
+}
+function addEntry(e){
+  const arr=getEntries().slice(); arr.push(e); setEntries(arr); saveState();
+}
+function updateEntryById(id,patch){
+  const arr=getEntries().map(e=>e.id===id?{...e,...patch}:e); setEntries(arr); saveState();
+}
+function removeEntryById(id){
+  setEntries(getEntries().filter(e=>e.id!==id)); saveState();
+}
+
+// Aggregate helpers (used by render code that thinks in product-keys)
+function selectedKeySet(){return new Set(getEntries().filter(e=>e.key).map(e=>e.key));}
+function totalPortionForKey(k){
+  return getEntries().filter(e=>e.key===k).reduce((s,e)=>s+(e.portion||0),0);
+}
 
 // ─── PERSISTENCE ─────────────────────────────────────────────────────────────
-const STORAGE_KEY='racion-sakhalin-v1';
-function todayStr(){return new Date().toDateString();}
+const STORAGE_KEY='racion-sakhalin-v2';
 function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY,JSON.stringify({
-      date:todayStr(),
-      selected:[...selected],
-      portions
+      entriesByDate, profile,
     }));
   }catch(e){}
 }
 function loadState(){
   try{
+    // ── Try v2 (new format) first
     const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw) return;
-    const data=JSON.parse(raw);
-    if(data.date!==todayStr()) return; // new day → start clean
-    (data.selected||[]).forEach(k=>{
-      if(products.find(p=>p.k===k)) selected.add(k);
-    });
-    Object.entries(data.portions||{}).forEach(([k,v])=>{
-      if(products.find(p=>p.k===k)) portions[k]=v;
-    });
+    if(raw){
+      const data=JSON.parse(raw);
+      entriesByDate=data.entriesByDate||{};
+      profile=data.profile||null;
+      // prune entries referencing products that no longer exist in catalog
+      Object.keys(entriesByDate).forEach(d=>{
+        entriesByDate[d]=entriesByDate[d].filter(e=>e.custom||products.find(p=>p.k===e.key));
+        if(entriesByDate[d].length===0) delete entriesByDate[d];
+      });
+      return;
+    }
+    // ── Migrate from v1 (selected/portions) if present
+    const v1raw=localStorage.getItem('racion-sakhalin-v1');
+    if(v1raw){
+      const v1=JSON.parse(v1raw);
+      if(v1.date && v1.selected){
+        // Use today's key — best-effort, since v1 stored "Wed May 07 2026" format
+        const key=todayKey();
+        const arr=[];
+        v1.selected.forEach(k=>{
+          if(!products.find(p=>p.k===k)) return;
+          arr.push({id:makeId(),key:k,portion:v1.portions?.[k]??null,meal:'lunch'});
+        });
+        if(arr.length) entriesByDate[key]=arr;
+        saveState();
+      }
+      localStorage.removeItem('racion-sakhalin-v1');
+    }
   }catch(e){}
 }
+
+// ─── PROFILE / NORMS ──────────────────────────────────────────────────────────
+const ACTIVITY_FACTORS={sedentary:1.2,light:1.375,moderate:1.55,active:1.725,veryActive:1.9};
+const ACTIVITY_LABELS={
+  sedentary:'Сидячий образ жизни',
+  light:'Лёгкая активность (1–3 тренировки/нед)',
+  moderate:'Умеренная (3–5 тренировок/нед)',
+  active:'Высокая (6–7 тренировок/нед)',
+  veryActive:'Очень высокая (физический труд)',
+};
+const GOAL_FACTORS={lose:0.80,maintain:1.0,gain:1.15};
+const GOAL_LABELS={lose:'Похудение (−20%)',maintain:'Поддержание веса',gain:'Набор массы (+15%)'};
+
+// Mifflin-St Jeor BMR + TDEE adjusted for goal
+function calcNorms(p){
+  if(!p) return {kcal:2000,protein:75,fat:70,carbs:250,fiber:30,sugar:50,sodium:2300};
+  const W=p.weightKg, H=p.heightCm, A=p.age;
+  const bmr=p.gender==='f' ? (10*W + 6.25*H - 5*A - 161) : (10*W + 6.25*H - 5*A + 5);
+  const tdee=bmr*(ACTIVITY_FACTORS[p.activity]||1.55);
+  const kcal=Math.round(tdee*(GOAL_FACTORS[p.goal]||1.0));
+  // protein: 1.6 g/kg for active, 1.2 for maintain, scale by goal
+  const proteinPerKg=p.goal==='gain'?1.8:p.goal==='lose'?1.8:1.4;
+  const protein=Math.round(W*proteinPerKg);
+  const fat=Math.round(kcal*0.30/9);
+  const carbs=Math.round((kcal - protein*4 - fat*9)/4);
+  return {kcal,protein,fat,carbs,fiber:30,sugar:Math.round(kcal*0.10/4),sodium:2300};
+}
+function getNorms(){return calcNorms(profile);}
 
 // ─── PRODUCTS TAB ────────────────────────────────────────────────────────────
 function renderProducts(){
   const el=document.getElementById('productList'); el.innerHTML='';
+  const selKeys=selectedKeySet();
+
+  // Free-form product entry button
+  const addCustom=document.createElement('button');
+  addCustom.className='custom-add-btn';
+  addCustom.innerHTML='<span style="font-size:18px">✏️</span><span>Произвольный продукт</span>';
+  addCustom.onclick=()=>openCustomProductDialog();
+  el.appendChild(addCustom);
+
   groups.forEach(grp=>{
     const prods=products.filter(p=>p.g===grp.id);
     if(!prods.length) return;
@@ -676,11 +1045,18 @@ function renderProducts(){
     const list=document.createElement('div'); list.className='prod-list';
     prods.forEach(p=>{
       const row=document.createElement('div');
-      const isSel=selected.has(p.k);
+      const isSel=selKeys.has(p.k);
       row.className='prod-row'+(isSel?' sel':'');
       row.style.setProperty('--sel-color',grp.color);
       const pc=getPC(p.k);
-      const amtLabel=isSel&&portions[p.k]!=null?`<span style="font-size:11px;font-weight:600;color:${grp.color}">${portions[p.k]} ${pc.unit}</span>`:'';
+      const entries=getEntries().filter(e=>e.key===p.k);
+      let amtLabel='';
+      if(entries.length===1){
+        amtLabel=`<span style="font-size:11px;font-weight:600;color:${grp.color}">${entries[0].portion} ${pc.unit}</span>`;
+      } else if(entries.length>1){
+        const total=entries.reduce((s,e)=>s+(e.portion||0),0);
+        amtLabel=`<span style="font-size:11px;font-weight:600;color:${grp.color}">${total} ${pc.unit} ×${entries.length}</span>`;
+      }
       row.innerHTML=`<span class="prod-emoji">${p.icon}</span>
         <div class="prod-text">
           <div class="prod-name">${p.name} ${amtLabel}</div>
@@ -689,7 +1065,12 @@ function renderProducts(){
         <div class="prod-check">✓</div>
         <div class="prod-info-btn" data-k="${p.k}">ℹ</div>`;
       row.querySelector('.prod-info-btn').addEventListener('click',e=>{e.stopPropagation();openModal(p.k);});
-      row.addEventListener('click',e=>{if(e.target.closest('.prod-info-btn')) return; openPortionDialog(p.k);});
+      row.addEventListener('click',e=>{
+        if(e.target.closest('.prod-info-btn')) return;
+        // 0 entries → add new; 1+ entries → edit the latest
+        if(entries.length===0) openPortionDialog({mode:'add',key:p.k});
+        else openPortionDialog({mode:'edit',entryId:entries[entries.length-1].id});
+      });
       list.appendChild(row);
     });
     el.appendChild(list);
@@ -697,20 +1078,47 @@ function renderProducts(){
 }
 
 // ─── PORTION DIALOG ──────────────────────────────────────────────────────────
-function openPortionDialog(k){
-  const p=products.find(x=>x.k===k); if(!p) return;
-  const grp=groups.find(g=>g.id===p.g);
-  const pc=getPC(k);
-  portionKey=k;
-  const isEdit=selected.has(k);
-  const currentVal=isEdit&&portions[k]!=null?portions[k]:pc.def;
+// opts: {mode:'add', key} OR {mode:'edit', entryId}
+function openPortionDialog(opts){
+  let p, pc, currentVal, currentMeal, isCustom=false, displayName, displayIcon, dose, grpColor;
 
-  document.getElementById('pEmoji').textContent=p.icon;
-  document.getElementById('pName').textContent=p.name;
-  document.getElementById('pRec').textContent='Рекомендуемая доза: '+p.dose;
-  document.getElementById('pLabel').textContent=
-    isEdit?'Измени количество или убери продукт из сегодняшнего рациона:':
-    'Сколько съешь сегодня?';
+  if(opts.mode==='edit'){
+    const entry=getEntries().find(e=>e.id===opts.entryId);
+    if(!entry) return;
+    if(entry.custom){
+      isCustom=true;
+      p={k:null,...entry.custom};
+      pc={unit:entry.custom.unit||'г',step:10,presets:[50,100,150,200],def:100};
+      displayName=entry.custom.name;
+      displayIcon=entry.custom.icon||'✏️';
+      dose='своя порция';
+      grpColor='var(--muted2)';
+    } else {
+      p=products.find(x=>x.k===entry.key);
+      if(!p) return;
+      pc=getPC(entry.key);
+      displayName=p.name; displayIcon=p.icon; dose=p.dose;
+      grpColor=groups.find(g=>g.id===p.g)?.color||'var(--green)';
+    }
+    currentVal=entry.portion;
+    currentMeal=entry.meal||defaultMealForNow();
+  } else { // add
+    p=products.find(x=>x.k===opts.key);
+    if(!p) return;
+    pc=getPC(opts.key);
+    displayName=p.name; displayIcon=p.icon; dose=p.dose;
+    grpColor=groups.find(g=>g.id===p.g)?.color||'var(--green)';
+    currentVal=pc.def;
+    currentMeal=defaultMealForNow();
+  }
+  portionDlg=opts;
+
+  document.getElementById('pEmoji').textContent=displayIcon;
+  document.getElementById('pName').textContent=displayName;
+  document.getElementById('pRec').textContent=isCustom?'Произвольный продукт':('Рекомендуемая доза: '+dose);
+  document.getElementById('pLabel').textContent=opts.mode==='edit'
+    ?'Измени количество, переключи приём пищи или удали запись:'
+    :'Сколько съешь и когда?';
   document.getElementById('pUnit').textContent=pc.unit;
 
   const input=document.getElementById('pInput');
@@ -731,6 +1139,20 @@ function openPortionDialog(k){
     presetsEl.appendChild(btn);
   });
 
+  // meal selector
+  const mealsEl=document.getElementById('pMeals'); mealsEl.innerHTML='';
+  let pickedMeal=currentMeal;
+  MEALS.forEach(m=>{
+    const btn=document.createElement('button'); btn.className='portion-meal'+(m.id===pickedMeal?' active':'');
+    btn.innerHTML=`<span style="font-size:14px">${m.icon}</span><span>${m.label}</span>`;
+    btn.onclick=()=>{
+      pickedMeal=m.id;
+      mealsEl.querySelectorAll('.portion-meal').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    mealsEl.appendChild(btn);
+  });
+
   // ± buttons
   document.getElementById('pMinus').onclick=()=>{
     const v=Math.max(0,parseFloat(input.value||0)-pc.step);
@@ -742,7 +1164,7 @@ function openPortionDialog(k){
     input.value=Math.round(v*10)/10;
     syncPresetHighlight();
   };
-  input.addEventListener('input',syncPresetHighlight);
+  input.oninput=syncPresetHighlight;
 
   function syncPresetHighlight(){
     const cur=parseFloat(input.value);
@@ -757,25 +1179,27 @@ function openPortionDialog(k){
   cancelBtn.textContent='Отмена'; cancelBtn.onclick=closePortionDialog;
   btns.appendChild(cancelBtn);
 
-  if(isEdit){
+  if(opts.mode==='edit'){
     const removeBtn=document.createElement('button'); removeBtn.className='portion-remove';
-    removeBtn.textContent='Убрать'; removeBtn.onclick=()=>{
-      selected.delete(k); delete portions[k];
-      closePortionDialog(); refreshAfterPortionChange();
+    removeBtn.textContent='Удалить'; removeBtn.onclick=()=>{
+      removeEntryById(opts.entryId);
+      closePortionDialog(); refresh();
     };
     btns.appendChild(removeBtn);
   }
 
   const confirmBtn=document.createElement('button'); confirmBtn.className='portion-confirm';
-  confirmBtn.style.background=grp.color;
-  confirmBtn.textContent=isEdit?'Обновить':'Добавить';
+  confirmBtn.style.background=grpColor;
+  confirmBtn.textContent=opts.mode==='edit'?'Сохранить':'Добавить';
   confirmBtn.onclick=()=>{
     const val=parseFloat(document.getElementById('pInput').value);
     if(!val||val<=0){ closePortionDialog(); return; }
-    selected.add(k);
-    portions[k]=val;
-    closePortionDialog();
-    refreshAfterPortionChange();
+    if(opts.mode==='edit'){
+      updateEntryById(opts.entryId,{portion:val,meal:pickedMeal});
+    } else {
+      addEntry({id:makeId(),key:opts.key,portion:val,meal:pickedMeal});
+    }
+    closePortionDialog(); refresh();
   };
   btns.appendChild(confirmBtn);
 
@@ -785,70 +1209,75 @@ function openPortionDialog(k){
 
 function closePortionDialog(){
   document.getElementById('portionOverlay').classList.remove('open');
-  portionKey=null;
+  portionDlg=null;
 }
 
-function refreshAfterPortionChange(){
-  saveState();
+// Re-render everything after entries change
+function refresh(){
   renderProducts();
   updateBadges();
   if(currentTab==='analysis') renderAnalysis();
   if(currentTab==='gaps') renderGapsTab();
+  updateDateLabel();
 }
 
 // ─── ANALYSIS TAB ────────────────────────────────────────────────────────────
 function renderAnalysis(){
   const el=document.getElementById('analysisContent'); el.innerHTML='';
-  if(!selected.size){
+  const entries=getEntries();
+  if(!entries.length){
     el.innerHTML='<div class="empty-state"><div class="big">📊</div><p>Выберите продукты во вкладке «Продукты»<br>и здесь появится анализ рациона</p></div>';
     return;
   }
-  const selProds=products.filter(p=>selected.has(p.k));
-  const scores=calcScores(selProds);
+  const selProds=[...selectedKeySet()].map(k=>products.find(p=>p.k===k)).filter(Boolean);
+  const scores=calcScores(entries);
 
-  // Selected chips
-  const t1=document.createElement('div'); t1.className='section-title'; t1.textContent='Выбрано сегодня';
+  // Entries grouped by meal
+  const t1=document.createElement('div'); t1.className='section-title'; t1.textContent=dateLabel(currentDate)==='Сегодня'?'Что съедено сегодня':`Что съедено: ${dateLabel(currentDate)}`;
   el.appendChild(t1);
-  const chips=document.createElement('div'); chips.className='sel-chips';
-  selProds.forEach(p=>{
-    const grp=groups.find(g=>g.id===p.g);
-    const pc=getPC(p.k);
-    const amt=portions[p.k]??pc.def;
-    const chip=document.createElement('div'); chip.className='sel-chip';
-    chip.style.cssText=`border-color:${grp.color}44;cursor:pointer`;
-    chip.title='Нажми чтобы изменить количество';
-    chip.innerHTML=`<span>${p.icon}</span><span>${p.name}</span><span style="font-size:11px;font-weight:600;color:${grp.color};margin-left:2px">${amt}${pc.unit}</span><span class="sel-chip-x" data-k="${p.k}">✕</span>`;
-    chip.addEventListener('click',e=>{
-      if(e.target.closest('.sel-chip-x')) return;
-      openPortionDialog(p.k);
-    });
-    chip.querySelector('.sel-chip-x').addEventListener('click',e=>{
-      e.stopPropagation();
-      selected.delete(p.k); delete portions[p.k];
-      saveState();
-      document.querySelectorAll('.prod-row').forEach(r=>{
-        if(r.querySelector('.prod-info-btn')?.dataset.k===p.k) r.classList.remove('sel');
+  MEALS.forEach(meal=>{
+    const mealEntries=entries.filter(e=>(e.meal||'lunch')===meal.id);
+    if(!mealEntries.length) return;
+    const head=document.createElement('div'); head.className='meal-head';
+    const subM=calcMacros(mealEntries);
+    head.innerHTML=`<span class="meal-head-l"><span style="font-size:14px">${meal.icon}</span><span>${meal.label}</span></span><span class="meal-head-r">${Math.round(subM.kcal)} ккал</span>`;
+    el.appendChild(head);
+    const chips=document.createElement('div'); chips.className='sel-chips';
+    mealEntries.forEach(e=>{
+      const isCustom=!!e.custom;
+      const p=isCustom?e.custom:products.find(x=>x.k===e.key);
+      if(!p) return;
+      const grp=isCustom?null:groups.find(g=>g.id===p.g);
+      const grpColor=grp?grp.color:'#94a3b8';
+      const pc=isCustom?{unit:e.custom.unit||'г'}:getPC(e.key);
+      const chip=document.createElement('div'); chip.className='sel-chip';
+      chip.style.cssText=`border-color:${grpColor}44;cursor:pointer`;
+      chip.innerHTML=`<span>${isCustom?(e.custom.icon||'✏️'):p.icon}</span><span>${isCustom?e.custom.name:p.name}</span><span style="font-size:11px;font-weight:600;color:${grpColor};margin-left:2px">${e.portion}${pc.unit}</span><span class="sel-chip-x" data-id="${e.id}">✕</span>`;
+      chip.addEventListener('click',ev=>{
+        if(ev.target.closest('.sel-chip-x')) return;
+        openPortionDialog({mode:'edit',entryId:e.id});
       });
-      updateBadges(); renderAnalysis();
+      chip.querySelector('.sel-chip-x').addEventListener('click',ev=>{
+        ev.stopPropagation();
+        removeEntryById(e.id);
+        refresh();
+      });
+      chips.appendChild(chip);
     });
-    chips.appendChild(chip);
+    el.appendChild(chips);
   });
-  el.appendChild(chips);
+
   const rb=document.createElement('button'); rb.className='reset-btn'; rb.textContent='Сбросить всё';
   rb.onclick=()=>{
-    if(!confirm('Сбросить весь сегодняшний рацион?')) return;
-    selected.clear();
-    Object.keys(portions).forEach(k=>delete portions[k]);
-    saveState();
-    document.querySelectorAll('.prod-row').forEach(r=>r.classList.remove('sel'));
-    updateBadges();renderAnalysis();renderGapsTab();renderProducts();
+    if(!confirm(`Сбросить весь рацион (${dateLabel(currentDate)})?`)) return;
+    setEntries([]); saveState(); refresh();
   };
   el.appendChild(rb);
 
   // Energy & macros (kcal + БЖУ + клетчатка/сахар/натрий)
   const tEM=document.createElement('div'); tEM.className='section-title'; tEM.textContent='Энергия и БЖУ';
   el.appendChild(tEM);
-  renderEnergyMacros(el,selProds);
+  renderEnergyMacros(el,entries);
 
   // Nutrient bars
   const t2=document.createElement('div'); t2.className='section-title'; t2.textContent='Покрытие нутриентов';
@@ -885,7 +1314,7 @@ function renderAnalysis(){
           btn.style.cssText=`background:${a.bg};color:${a.color};border:1px solid ${a.border}`;
           btn.textContent=a.label;
           btn.addEventListener('click',()=>{
-            openPortionDialog(a.key);
+            openPortionDialog({mode:'add',key:a.key});
           });
           aw.appendChild(btn);
         });
@@ -899,13 +1328,14 @@ function renderAnalysis(){
 // ─── GAPS TAB ────────────────────────────────────────────────────────────────
 function renderGapsTab(){
   const el=document.getElementById('gapsContent'); el.innerHTML='';
-  const selProds=products.filter(p=>selected.has(p.k));
-  const scores=selected.size?calcScores(selProds):{};
-  const selKeys=new Set(selProds.map(p=>p.k));
+  const entries=getEntries();
+  const selKeys=selectedKeySet();
+  const scores=entries.length?calcScores(entries):{};
+  const hasAny=entries.length>0;
 
   const sub=document.createElement('div');
   sub.style.cssText='font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5';
-  sub.textContent=selected.size?`Обновлено для твоего рациона (${selected.size} продуктов)`:'Выбери продукты во вкладке «Продукты» — панель обновится автоматически';
+  sub.textContent=hasAny?`Обновлено для рациона (${selKeys.size} продукт${selKeys.size===1?'':'ов'}, ${entries.length} запис${entries.length===1?'ь':'ей'})`:'Выбери продукты во вкладке «Продукты» — панель обновится автоматически';
   el.appendChild(sub);
 
   GAPS_DEF.forEach(g=>{
@@ -913,7 +1343,7 @@ function renderGapsTab(){
     const hasPartial=g.partials.some(k=>selKeys.has(k));
     const score=scores[g.nutKey]||0;
     let status,statusColor,statusLabel;
-    if(!selected.size){status='unknown';statusColor='var(--muted)';statusLabel='';}
+    if(!hasAny){status='unknown';statusColor='var(--muted)';statusLabel='';}
     else if(hasSolver&&score>=60){status='solved';statusColor='var(--green)';statusLabel='✓ Закрыт';}
     else if(hasSolver||hasPartial||score>=30){status='partial';statusColor='var(--amber)';statusLabel='◑ Частично';}
     else{status=g.baseSev==='crit'?'crit':'open';statusColor=g.baseSev==='crit'?'var(--red)':'var(--amber)';statusLabel=g.baseSev==='crit'?'✗ Критично':'✗ Не закрыт';}
@@ -933,7 +1363,7 @@ function renderGapsTab(){
     desc.textContent=status==='solved'?g.descSolved:g.descBase; card.appendChild(desc);
 
     const srcs=document.createElement('div'); srcs.className='gap-srcs';
-    if(selected.size){
+    if(hasAny){
       [...g.solvers,...g.partials].filter(k=>selKeys.has(k)&&g.srcsLabel[k]).forEach(k=>{
         const t=document.createElement('span'); t.className='gap-src gap-src-ok'; t.textContent=g.srcsLabel[k]; srcs.appendChild(t);
       });
@@ -952,9 +1382,9 @@ function renderGapsTab(){
 }
 
 // ─── ENERGY & MACROS RENDER ──────────────────────────────────────────────────
-function renderEnergyMacros(parent,prods){
-  const m=calcMacros(prods);
-  const norms=DEFAULT_NORMS;
+function renderEnergyMacros(parent,entries){
+  const m=calcMacros(entries);
+  const norms=getNorms();
   const round=v=>Math.round(v);
   const pct=(v,n)=>Math.round((v/n)*100);
 
@@ -1017,54 +1447,52 @@ function renderEnergyMacros(parent,prods){
   });
 }
 
-// ─── DAILY NORMS (defaults; profile in Phase 3 will override) ───────────────
-const DEFAULT_NORMS={
-  kcal:2000,
-  protein:75,    // ~15% of 2000 kcal (1.0–1.2 g/kg for ~70 kg adult)
-  fat:70,        // ~32% of 2000 kcal
-  carbs:250,     // ~50% of 2000 kcal
-  fiber:30,      // target (more is fine)
-  sugar:50,      // limit (WHO recommends <10% of kcal)
-  sodium:2300,   // limit (mg) — WHO/AHA upper bound
-};
-
-// How many grams did the user actually eat of product p?
-// Returns 0 for products without macro data (pills, tinctures, drops).
-function getEatenGrams(p){
-  if(p.kcal==null) return 0;
-  const pc=getPC(p.k);
-  const portion=portions[p.k]??pc.def;
-  if(pc.unit==='г') return portion;
-  return p.gramsPerUnit?portion*p.gramsPerUnit:0;
+// ─── ENTRY → GRAMS HELPER ────────────────────────────────────────────────────
+// Convert a single entry's portion (in its unit) to grams.
+// Returns 0 for entries that have no macro data (pills, tinctures).
+function entryGrams(entry){
+  if(entry.custom){
+    // custom: portion is always in grams
+    return entry.portion||0;
+  }
+  const p=products.find(x=>x.k===entry.key);
+  if(!p||p.kcal==null) return 0;
+  const pc=getPC(entry.key);
+  if(pc.unit==='г') return entry.portion;
+  return p.gramsPerUnit?entry.portion*p.gramsPerUnit:0;
 }
 
-// Sum kcal/protein/fat/carbs/fiber/sugar/sodium across selected products.
-function calcMacros(prods){
+// Sum kcal/protein/fat/carbs/fiber/sugar/sodium across entries.
+function calcMacros(entries){
   const t={kcal:0,protein:0,fat:0,carbs:0,fiber:0,sugar:0,sodium:0};
-  prods.forEach(p=>{
-    const grams=getEatenGrams(p);
+  entries.forEach(e=>{
+    const grams=entryGrams(e);
     if(!grams) return;
     const f=grams/100;
-    t.kcal    += (p.kcal     ??0)*f;
-    t.protein += (p.protein  ??0)*f;
-    t.fat     += (p.fat      ??0)*f;
-    t.carbs   += (p.carbsNum ??0)*f;
-    t.fiber   += (p.fiber    ??0)*f;
-    t.sugar   += (p.sugar    ??0)*f;
-    t.sodium  += (p.sodium   ??0)*f;
+    const src=e.custom?e.custom:products.find(x=>x.k===e.key);
+    if(!src) return;
+    t.kcal    += (src.kcal     ??0)*f;
+    t.protein += (src.protein  ??0)*f;
+    t.fat     += (src.fat      ??0)*f;
+    t.carbs   += (src.carbsNum ??0)*f;
+    t.fiber   += (src.fiber    ??0)*f;
+    t.sugar   += (src.sugar    ??0)*f;
+    t.sodium  += (src.sodium   ??0)*f;
   });
   return t;
 }
 
-// ─── LOGIC HELPERS ───────────────────────────────────────────────────────────
-function calcScores(prods){
+// ─── NUTRIENT-FLAG SCORES ───────────────────────────────────────────────────
+function calcScores(entries){
   const scores={};
   nutDefs.forEach(nd=>{scores[nd.k]=0;});
-  prods.forEach(p=>{
-    const pc=getPC(p.k);
-    const actual=portions[p.k]??pc.def;
-    // ratio: how much they ate vs recommended dose (capped at 1.5 to avoid gaming)
-    const ratio=Math.min(1.5, actual/pc.def);
+  entries.forEach(e=>{
+    if(e.custom||!e.key) return; // custom products have no nutrient flags
+    const p=products.find(x=>x.k===e.key);
+    if(!p) return;
+    const pc=getPC(e.key);
+    // ratio: amount eaten vs recommended dose (capped at 1.5 to avoid gaming)
+    const ratio=Math.min(1.5, e.portion/pc.def);
     nutDefs.forEach(nd=>{
       const v=p.nuts[nd.k]??NA;
       if(v!==NA) scores[nd.k]+=(WEIGHT[v]||0)*ratio;
@@ -1121,15 +1549,20 @@ function showTab(tab){
 }
 
 function updateBadges(){
-  const n=selected.size;
+  const entries=getEntries();
+  const n=entries.length;
+  const selKeys=selectedKeySet();
   const badge=document.getElementById('topBadge');
-  badge.textContent=n?`${n} выбрано`:'Ничего не выбрано';
+  if(n){
+    const m=calcMacros(entries);
+    badge.textContent=`${Math.round(m.kcal)} ккал · ${n}`;
+  } else {
+    badge.textContent='Пусто';
+  }
   badge.classList.toggle('has-sel',n>0);
 
   // critical gaps count
-  const selProds=products.filter(p=>selected.has(p.k));
-  const scores=n?calcScores(selProds):{};
-  const selKeys=new Set(selProds.map(p=>p.k));
+  const scores=n?calcScores(entries):{};
   const openCrit=GAPS_DEF.filter(g=>{
     const hasSolver=g.solvers.some(k=>selKeys.has(k));
     const score=scores[g.nutKey]||0;
@@ -1168,13 +1601,17 @@ function openModal(k){
   if(p.warn) ww.innerHTML=`<div class="msec"><div class="msec-title">Важно</div><div class="warn-box">⚠ ${p.warn}</div></div>`;
   // add/remove button
   const ab=document.getElementById('mAddBtn'); ab.innerHTML='';
-  const isSel=selected.has(k);
+  const myEntries=getEntries().filter(e=>e.key===k);
+  const isSel=myEntries.length>0;
   const btn=document.createElement('button');
   btn.className='modal-add-btn '+(isSel?'remove':'add');
   btn.textContent=isSel?'✎ Изменить количество':'+ Добавить в рацион';
   btn.onclick=()=>{
     closeModal();
-    setTimeout(()=>openPortionDialog(k),120);
+    setTimeout(()=>{
+      if(isSel) openPortionDialog({mode:'edit',entryId:myEntries[myEntries.length-1].id});
+      else openPortionDialog({mode:'add',key:k});
+    },120);
   };
   ab.appendChild(btn);
   document.getElementById('overlay').classList.add('open');
@@ -1187,8 +1624,184 @@ function openModal(k){
 function closeOverlay(e){if(e.target===document.getElementById('overlay')) closeModal();}
 function closeModal(){document.getElementById('overlay').classList.remove('open');modalKey=null;}
 
+// ─── DATE LABEL IN TOPBAR ────────────────────────────────────────────────────
+function updateDateLabel(){
+  const el=document.getElementById('topDate');
+  if(el) el.textContent='📅 '+dateLabel(currentDate);
+}
+
+// ─── PROFILE DIALOG ──────────────────────────────────────────────────────────
+function openProfileDialog(){
+  // populate activity dropdown
+  const sel=document.getElementById('prfActivity');
+  sel.innerHTML='';
+  Object.entries(ACTIVITY_LABELS).forEach(([id,lbl])=>{
+    const o=document.createElement('option'); o.value=id; o.textContent=lbl; sel.appendChild(o);
+  });
+  const p=profile||{};
+  document.getElementById('prfName').value=p.name||'';
+  document.getElementById('prfAge').value=p.age||30;
+  document.getElementById('prfHeight').value=p.heightCm||175;
+  document.getElementById('prfWeight').value=p.weightKg||70;
+  sel.value=p.activity||'moderate';
+
+  function setRadio(id,val){
+    document.querySelectorAll(`#${id} button`).forEach(b=>{
+      b.classList.toggle('active',b.dataset.v===val);
+    });
+  }
+  setRadio('prfGender',p.gender||'m');
+  setRadio('prfGoal',p.goal||'maintain');
+
+  document.querySelectorAll('#prfGender button').forEach(b=>{
+    b.onclick=()=>{document.querySelectorAll('#prfGender button').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateProfilePreview();};
+  });
+  document.querySelectorAll('#prfGoal button').forEach(b=>{
+    b.onclick=()=>{document.querySelectorAll('#prfGoal button').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateProfilePreview();};
+  });
+  ['prfAge','prfHeight','prfWeight','prfActivity'].forEach(id=>{
+    document.getElementById(id).oninput=updateProfilePreview;
+    document.getElementById(id).onchange=updateProfilePreview;
+  });
+
+  updateProfilePreview();
+  document.getElementById('profileDlg').classList.add('open');
+}
+function getProfileFromDialog(){
+  const gender=document.querySelector('#prfGender button.active')?.dataset.v;
+  const goal=document.querySelector('#prfGoal button.active')?.dataset.v;
+  const age=parseInt(document.getElementById('prfAge').value);
+  const heightCm=parseInt(document.getElementById('prfHeight').value);
+  const weightKg=parseFloat(document.getElementById('prfWeight').value);
+  const activity=document.getElementById('prfActivity').value;
+  const name=document.getElementById('prfName').value.trim();
+  if(!gender||!goal||!age||!heightCm||!weightKg||!activity) return null;
+  return {name,gender,age,heightCm,weightKg,activity,goal};
+}
+function updateProfilePreview(){
+  const p=getProfileFromDialog();
+  const el=document.getElementById('prfPreview');
+  if(!p){el.innerHTML='Заполни все поля — здесь появится твоя дневная норма.';return;}
+  const n=calcNorms(p);
+  el.innerHTML=`Твоя норма: <b>${n.kcal} ккал</b> / Б <b>${n.protein} г</b> / Ж <b>${n.fat} г</b> / У <b>${n.carbs} г</b>. Клетчатка ≥ <b>${n.fiber} г</b>, сахар ≤ ${n.sugar} г, натрий ≤ ${n.sodium} мг.`;
+}
+function saveProfile(){
+  const p=getProfileFromDialog();
+  if(!p){alert('Заполни все поля');return;}
+  profile=p;
+  saveState();
+  closeDialog('profileDlg');
+  refresh();
+}
+
+// ─── CALENDAR ────────────────────────────────────────────────────────────────
+let calMonth=null; // {year, month}
+function openCalendar(){
+  const d=new Date(currentDate+'T00:00:00');
+  calMonth={year:d.getFullYear(),month:d.getMonth()};
+  renderCalendar();
+  document.getElementById('calDlg').classList.add('open');
+}
+function calNav(delta){
+  calMonth.month+=delta;
+  while(calMonth.month<0){calMonth.month+=12;calMonth.year--;}
+  while(calMonth.month>11){calMonth.month-=12;calMonth.year++;}
+  renderCalendar();
+}
+function calJumpToday(){
+  currentDate=todayKey();
+  refresh();
+  closeDialog('calDlg');
+}
+function renderCalendar(){
+  const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  document.getElementById('calMonthLabel').textContent=monthNames[calMonth.month]+' '+calMonth.year;
+  const grid=document.getElementById('calGrid'); grid.innerHTML='';
+  ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>{
+    const e=document.createElement('div'); e.className='cal-dow'; e.textContent=d; grid.appendChild(e);
+  });
+  const first=new Date(calMonth.year,calMonth.month,1);
+  let firstDow=first.getDay(); if(firstDow===0) firstDow=7; firstDow--; // Mon-first
+  for(let i=0;i<firstDow;i++){
+    const e=document.createElement('div'); e.className='cal-day empty'; grid.appendChild(e);
+  }
+  const daysInMonth=new Date(calMonth.year,calMonth.month+1,0).getDate();
+  const today=todayKey();
+  for(let d=1;d<=daysInMonth;d++){
+    const key=calMonth.year+'-'+String(calMonth.month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const cell=document.createElement('div'); cell.className='cal-day';
+    const isFuture=key>today;
+    const hasData=!!entriesByDate[key]?.length;
+    const isToday=key===today;
+    const isSelected=key===currentDate;
+    if(isFuture) cell.classList.add('future');
+    if(hasData) cell.classList.add('has-data');
+    if(isToday) cell.classList.add('today');
+    if(isSelected) cell.classList.add('selected');
+    let inner=`<div class="cal-day-num">${d}</div>`;
+    if(hasData){
+      const m=calcMacros(entriesByDate[key]);
+      inner+=`<div class="cal-day-kcal">${Math.round(m.kcal)}</div>`;
+    }
+    cell.innerHTML=inner;
+    if(!isFuture) cell.onclick=()=>{currentDate=key;refresh();closeDialog('calDlg');};
+    grid.appendChild(cell);
+  }
+}
+
+// ─── CUSTOM PRODUCT DIALOG ───────────────────────────────────────────────────
+function openCustomProductDialog(){
+  ['cpName','cpPortion','cpKcal','cpProtein','cpFat','cpCarbs','cpFiber','cpSugar','cpSodium'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  // meal selector
+  const mealsEl=document.getElementById('cpMeal'); mealsEl.innerHTML='';
+  let pickedMeal=defaultMealForNow();
+  MEALS.forEach(m=>{
+    const btn=document.createElement('button');
+    btn.dataset.v=m.id;
+    if(m.id===pickedMeal) btn.classList.add('active');
+    btn.innerHTML=`${m.icon} ${m.label}`;
+    btn.onclick=()=>{
+      pickedMeal=m.id;
+      mealsEl.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    mealsEl.appendChild(btn);
+  });
+  document.getElementById('customDlg').classList.add('open');
+  document.getElementById('customDlg').dataset.meal='';
+  setTimeout(()=>document.getElementById('cpName').focus(),100);
+}
+function saveCustomProduct(){
+  const name=document.getElementById('cpName').value.trim();
+  const portion=parseFloat(document.getElementById('cpPortion').value);
+  const kcal=parseFloat(document.getElementById('cpKcal').value);
+  const protein=parseFloat(document.getElementById('cpProtein').value)||0;
+  const fat=parseFloat(document.getElementById('cpFat').value)||0;
+  const carbsNum=parseFloat(document.getElementById('cpCarbs').value)||0;
+  const fiber=parseFloat(document.getElementById('cpFiber').value)||0;
+  const sugar=parseFloat(document.getElementById('cpSugar').value)||0;
+  const sodium=parseFloat(document.getElementById('cpSodium').value)||0;
+  const meal=document.querySelector('#cpMeal button.active')?.dataset.v||defaultMealForNow();
+  if(!name||!portion||portion<=0||isNaN(kcal)){
+    alert('Минимум: название, порция и ккал/100 г.');
+    return;
+  }
+  addEntry({
+    id:makeId(),key:null,portion,meal,
+    custom:{name,kcal,protein,fat,carbsNum,fiber,sugar,sodium,unit:'г',icon:'✏️'},
+  });
+  closeDialog('customDlg');
+  refresh();
+}
+
+// ─── DIALOG GENERIC HELPER ───────────────────────────────────────────────────
+function closeDialog(id){document.getElementById(id).classList.remove('open');}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
 loadState();
+updateDateLabel();
 renderProducts();
 renderGapsTab();
 updateBadges();
