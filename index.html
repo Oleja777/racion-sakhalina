@@ -9,8 +9,10 @@
 <meta name="apple-mobile-web-app-title" content="Рацион Сахалина">
 <meta name="theme-color" content="#0b0f18">
 <meta name="description" content="Персональный трекер питания — продукты Сахалина, нутриенты, суточные нормы">
-<link rel="manifest" id="pwa-manifest">
-<link rel="apple-touch-icon" id="apple-icon">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <title>Рацион Сахалина</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -364,7 +366,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <div class="modal-head">
       <div class="modal-badge" id="mBadge"></div>
       <div class="modal-name" id="mName"></div>
-      <div class="modal-latin" id="mLatin"></div>
       <div class="modal-dose" id="mDose"></div>
     </div>
     <div class="modal-body">
@@ -526,7 +527,7 @@ const products=[
   {k:'openyok',g:'fungi',icon:'🍄',name:'Опёнок',dose:'100–200 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:F,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Завершает грибной сезон. Богат цинком, медью, фосфором. Маринованные — популярная заготовка.',use:'Обязательно варить 30–40 мин (первую воду слить).',useTags:['Маринованный','Жареный','Суп'],season:'Сентябрь — октябрь.',seasonM:[8,9],seasonType:'plant',warn:'Есть ядовитый двойник — ложный опёнок (нет кольца, горький вкус).'},
   {k:'champignon',g:'fungi',icon:'🍄',name:'Шампиньон',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Можно есть сырыми. Богат эрготионеином (антиоксидант) и D2. Растёт на лугах Сахалина.',use:'Жарить, варить, запекать, есть сырыми. Сушить на солнце для D2.',useTags:['Жареный','Суп','Сырым в салат'],season:'Июль — сентябрь.',seasonM:[6,7,8],seasonType:'plant',warn:'Не путать с бледной поганкой (белые пластинки у поганки).'},
   {k:'volnushka',g:'fungi',icon:'🍄',name:'Волнушка',dose:'80–120 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:N,vitD:N,iron:P,calcium:N,mag:P,iod:N,zinc:N,sel:N,omega:N,protein:P,fiber:P,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Ценный гриб для засолки. Фунгистерин, антибактериальные вещества.',use:'Вымочить 1–2 дня. Солить горячим или холодным способом.',useTags:['Солёная','Маринованная'],season:'Август — октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:'Условно-съедобная. Обязательное вымачивание.'},
-  {k:'oyster',g:'fungi',icon:'🍄',name:'Вешенка',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Ловастин снижает холестерин. Растёт до морозов. Хитин стимулирует иммунитет.',use:'Жарить 5–7 мин. Не переваривать.',useTags:['Жареная','Суп','Тушёная'],season:'Июль — ноябрь.',seasonM:[6,7,8,9,10],seasonType:'plant',warn:null},
+  {k:'oyster_f',g:'fungi',icon:'🍄',name:'Вешенка',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Ловастин снижает холестерин. Растёт до морозов. Хитин стимулирует иммунитет.',use:'Жарить 5–7 мин. Не переваривать.',useTags:['Жареная','Суп','Тушёная'],season:'Июль — ноябрь.',seasonM:[6,7,8,9,10],seasonType:'plant',warn:null},
   {k:'eleu',g:'suppl',icon:'🌿',name:'Элеутерококк',dose:'20–30 кап. × 2/день',nuts:{vitC:P,vitK:NA,vitA:NA,vitE:NA,bvit:NA,b12:N,vitD:N,iron:NA,calcium:NA,mag:NA,iod:NA,zinc:NA,sel:NA,omega:NA,protein:NA,fiber:NA,antioxid:F,adapt:F,phyto:P,carbs:N},desc:'Мощный адаптоген Сахалина. Повышает устойчивость к стрессу, нормализует давление.',use:'Настойка: 20–30 капель до еды курсами 3–4 недели. Не вечером.',useTags:['Настойка','Отвар корня'],season:'Аптека — круглый год.',seasonM:[],seasonType:'plant',warn:'Противопоказан при гипертонии, бессоннице, беременности.'},
   {k:'fishoil',g:'suppl',icon:'🫙',name:'Рыбий жир',dose:'1–2 г ДГК+ЭПК / день',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:N,b12:N,vitD:F,iron:N,calcium:N,mag:N,iod:N,zinc:N,sel:N,omega:F,protein:N,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Закрывает D3 и омега-3 одновременно. Триглицеридная форма усваивается на 70% лучше этиловых эфиров.',use:'Принимать с едой, содержащей жир. Хранить в холодильнике.',useTags:['С едой','Утром или в обед','Хранить в холодильнике'],season:'Особенно важен октябрь–март.',seasonM:[],seasonType:'plant',warn:'Не менее 500 мг ДГК+ЭПК на капсулу. Триглицеридная форма лучше.'},
   {k:'sealoil',g:'suppl',icon:'🦭',name:'Тюлений жир',dose:'6 г / день (2–3 капсулы)',nuts:{vitC:N,vitK:N,vitA:F,vitE:P,bvit:N,b12:N,vitD:F,iron:N,calcium:N,mag:N,iod:P,zinc:N,sel:N,omega:F,protein:N,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Превосходит рыбий жир по составу омега-кислот. Уникальная DPA (докозапентаеновая кислота) — есть только в жире морских млекопитающих и женском молоке, лечит атеросклероз. Содержит 11 жирных кислот омега-3/6/7/9 (73% состава). Сквален — онкопротектор. Витамины A, D, E, K, F. Усваивается лучше рыбьего жира — форма триглицеридов до 90%. 6 г закрывают суточную норму по всем жирным кислотам и жирорастворимым витаминам.',use:'2–3 капсулы в день с едой. Лучше утром. Жир тюленя ларга с Сахалина — один из самых чистых источников.',useTags:['2–3 капсулы с едой','Утром','Сахалинский ларга — лучший'],season:'Круглый год. Местный тюлень ларга — Охотское море.',seasonM:[],seasonType:'plant',warn:'Разжижает кровь — осторожно с антикоагулянтами. Беременным — только по назначению врача. Проверять качество сырья — возможны тяжёлые металлы при плохой очистке.'},
@@ -571,6 +572,33 @@ const portions={};              // k -> actual amount entered by user
 let currentTab='products';
 let modalKey=null;
 let portionKey=null;            // which product is being portioned right now
+
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+const STORAGE_KEY='racion-sakhalin-v1';
+function todayStr(){return new Date().toDateString();}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({
+      date:todayStr(),
+      selected:[...selected],
+      portions
+    }));
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const data=JSON.parse(raw);
+    if(data.date!==todayStr()) return; // new day → start clean
+    (data.selected||[]).forEach(k=>{
+      if(products.find(p=>p.k===k)) selected.add(k);
+    });
+    Object.entries(data.portions||{}).forEach(([k,v])=>{
+      if(products.find(p=>p.k===k)) portions[k]=v;
+    });
+  }catch(e){}
+}
 
 // ─── PRODUCTS TAB ────────────────────────────────────────────────────────────
 function renderProducts(){
@@ -697,6 +725,7 @@ function closePortionDialog(){
 }
 
 function refreshAfterPortionChange(){
+  saveState();
   renderProducts();
   updateBadges();
   if(currentTab==='analysis') renderAnalysis();
@@ -732,6 +761,7 @@ function renderAnalysis(){
     chip.querySelector('.sel-chip-x').addEventListener('click',e=>{
       e.stopPropagation();
       selected.delete(p.k); delete portions[p.k];
+      saveState();
       document.querySelectorAll('.prod-row').forEach(r=>{
         if(r.querySelector('.prod-info-btn')?.dataset.k===p.k) r.classList.remove('sel');
       });
@@ -742,8 +772,10 @@ function renderAnalysis(){
   el.appendChild(chips);
   const rb=document.createElement('button'); rb.className='reset-btn'; rb.textContent='Сбросить всё';
   rb.onclick=()=>{
+    if(!confirm('Сбросить весь сегодняшний рацион?')) return;
     selected.clear();
     Object.keys(portions).forEach(k=>delete portions[k]);
+    saveState();
     document.querySelectorAll('.prod-row').forEach(r=>r.classList.remove('sel'));
     updateBadges();renderAnalysis();renderGapsTab();renderProducts();
   };
@@ -947,7 +979,6 @@ function openModal(k){
   document.getElementById('mBadge').textContent=grp.label;
   document.getElementById('mBadge').style.cssText=`background:${grp.color}22;color:${grp.color};border:1px solid ${grp.color}44`;
   document.getElementById('mName').textContent=p.name;
-  document.getElementById('mLatin').textContent=p.icon;
   document.getElementById('mDose').textContent='Суточная доза: '+p.dose;
   document.getElementById('mDesc').textContent=p.desc;
   const ne=document.getElementById('mNuts'); ne.innerHTML='';
@@ -983,99 +1014,20 @@ function closeOverlay(e){if(e.target===document.getElementById('overlay')) close
 function closeModal(){document.getElementById('overlay').classList.remove('open');modalKey=null;}
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+loadState();
 renderProducts();
 renderGapsTab();
 updateBadges();
 
 // ─── PWA SETUP ───────────────────────────────────────────────────────────────
 (function(){
-  // Generate icon via canvas (192x192 and 512x512)
-  function makeIcon(size){
-    const c=document.createElement('canvas');
-    c.width=c.height=size;
-    const ctx=c.getContext('2d');
-    // background
-    ctx.fillStyle='#0b0f18';
-    ctx.beginPath();
-    ctx.roundRect(0,0,size,size,size*0.22);
-    ctx.fill();
-    // green circle
-    const cx=size/2, cy=size*0.44, r=size*0.28;
-    const grd=ctx.createRadialGradient(cx,cy,r*0.1,cx,cy,r);
-    grd.addColorStop(0,'#2ecc8a');
-    grd.addColorStop(1,'#1a9e66');
-    ctx.fillStyle=grd;
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-    // leaf emoji substitute — just text
-    ctx.fillStyle='#fff';
-    ctx.font=`bold ${size*0.32}px serif`;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText('🌿',cx,cy);
-    // bottom text
-    ctx.fillStyle='#7a8fa8';
-    ctx.font=`${size*0.095}px sans-serif`;
-    ctx.fillText('РАЦИОН',cx,size*0.78);
-    ctx.fillStyle='#2ecc8a';
-    ctx.font=`bold ${size*0.095}px sans-serif`;
-    ctx.fillText('САХАЛИНА',cx,size*0.88);
-    return c.toDataURL('image/png');
-  }
-
-  const icon192=makeIcon(192);
-  const icon512=makeIcon(512);
-
-  // Inject apple touch icon
-  document.getElementById('apple-icon').href=icon192;
-
-  // Build manifest object and inject as blob URL
-  const manifest={
-    name:'Рацион Сахалина',
-    short_name:'Рацион',
-    description:'Персональный трекер питания — продукты Сахалина, нутриенты, суточные нормы',
-    start_url:'.',
-    display:'standalone',
-    orientation:'portrait',
-    background_color:'#0b0f18',
-    theme_color:'#0b0f18',
-    lang:'ru',
-    icons:[
-      {src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'},
-      {src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'},
-    ]
-  };
-  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
-  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
-
-  // Register service worker (inline via blob)
+  // Register service worker from external file (blob URLs are blocked by Chrome)
   if('serviceWorker' in navigator){
-    const swCode=`
-const CACHE='racion-sakhalin-v1';
-const ASSETS=['/'];
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));
-  self.skipWaiting();
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
-  e.respondWith(
-    fetch(e.request).then(r=>{
-      const rc=r.clone();
-      caches.open(CACHE).then(c=>c.put(e.request,rc));
-      return r;
-    }).catch(()=>caches.match(e.request).then(r=>r||new Response('Нет подключения',{status:503})))
-  );
-});
-`;
-    const swBlob=new Blob([swCode],{type:'application/javascript'});
-    const swUrl=URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl,{scope:'./'})
-      .then(()=>console.log('SW registered'))
-      .catch(e=>console.log('SW error',e));
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('./sw.js',{scope:'./'})
+        .then(()=>console.log('SW registered'))
+        .catch(e=>console.log('SW error',e));
+    });
   }
 
   // ─── INSTALL BANNER ──────────────────────────────────────────────────────
