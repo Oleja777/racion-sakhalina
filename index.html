@@ -1,1 +1,1127 @@
-placeholder
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Рацион Сахалина">
+<meta name="theme-color" content="#0b0f18">
+<meta name="description" content="Персональный трекер питания — продукты Сахалина, нутриенты, суточные нормы">
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" id="apple-icon">
+<title>Рацион Сахалина</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f18; --s1:#131928; --s2:#1a2236; --s3:#222840; --s4:#2a3354;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --text:#dde4f0; --muted:#5a6a85; --muted2:#7a8fa8;
+  --green:#2ecc8a; --amber:#f5a623; --red:#e8524a; --teal:#1fd0e8;
+  --nav-h:64px; --top-h:52px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;font-size:15px}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--top-h);
+  background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;z-index:50
+}
+.topbar-title{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.topbar-badge{
+  font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;
+  background:var(--s3);color:var(--muted2);border:1px solid var(--border2);
+  transition:all .2s
+}
+.topbar-badge.has-sel{background:rgba(46,204,138,.15);color:var(--green);border-color:rgba(46,204,138,.3)}
+
+/* ── SCROLL AREA ── */
+.screen{
+  position:fixed;top:var(--top-h);bottom:calc(var(--nav-h) + var(--safe-bottom));
+  left:0;right:0;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch
+}
+.screen-inner{padding:12px 12px 20px}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  height:calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom:var(--safe-bottom);
+  background:var(--s1);border-top:1px solid var(--border2);
+  display:flex;z-index:50
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;transition:all .15s;border:none;background:transparent;
+  color:var(--muted);padding:6px 0
+}
+.nav-btn.active{color:var(--teal)}
+.nav-btn .nb-icon{font-size:20px;line-height:1}
+.nav-btn .nb-label{font-size:10px;font-weight:500;letter-spacing:.02em}
+.nav-btn .nb-count{
+  font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;
+  background:var(--red);color:#fff;min-width:16px;text-align:center;
+  display:none
+}
+.nav-btn.active .nb-icon{filter:drop-shadow(0 0 6px var(--teal))}
+
+/* ── GROUP HEADER ── */
+.grp-head{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 4px 8px;margin-top:4px
+}
+.grp-head:first-child{padding-top:4px;margin-top:0}
+.grp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.grp-name{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
+.grp-count{font-size:11px;color:var(--muted);background:var(--s3);padding:1px 7px;border-radius:8px}
+
+/* ── PRODUCT ROW ── */
+.prod-list{display:flex;flex-direction:column;gap:2px}
+.prod-row{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border-radius:12px;
+  background:var(--s2);border:1.5px solid transparent;
+  transition:all .15s;cursor:pointer;position:relative
+}
+.prod-row.sel{border-color:var(--sel-color, var(--green));background:var(--s3)}
+.prod-row:active{opacity:.8}
+.prod-emoji{font-size:22px;line-height:1;flex-shrink:0;width:30px;text-align:center}
+.prod-text{flex:1;min-width:0}
+.prod-name{font-size:14px;font-weight:500;color:var(--text);line-height:1.2}
+.prod-dose{font-size:11px;color:var(--muted);margin-top:1px}
+.prod-check{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--border2);background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:transparent;transition:all .15s
+}
+.prod-row.sel .prod-check{background:var(--sel-color,var(--green));border-color:transparent;color:#fff}
+.prod-info-btn{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:var(--s3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--muted);cursor:pointer;transition:all .12s
+}
+.prod-info-btn:active{background:var(--s4);color:var(--text)}
+
+/* ── ANALYSIS SCREEN ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .big{font-size:48px;margin-bottom:14px}
+.empty-state p{font-size:14px;line-height:1.6}
+
+.section-title{
+  font-family:'Unbounded',sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  padding:16px 0 8px
+}
+.section-title:first-child{padding-top:4px}
+
+/* selected chips */
+.sel-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.sel-chip{
+  display:flex;align-items:center;gap:5px;padding:6px 10px;
+  background:var(--s2);border:1px solid var(--border2);border-radius:20px;
+  font-size:12px;color:var(--text)
+}
+.sel-chip-x{color:var(--muted);margin-left:2px;cursor:pointer;font-size:13px}
+.reset-btn{
+  width:100%;margin-top:8px;padding:10px;border-radius:10px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--muted);font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer
+}
+
+/* nut bars */
+.nut-row{margin-bottom:8px}
+.nut-top{display:flex;justify-content:space-between;margin-bottom:3px}
+.nut-name{font-size:13px;color:var(--text)}
+.nut-pct{font-size:12px;font-weight:600}
+.bar-track{height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* suggestion cards */
+.sug-card{
+  background:var(--s2);border:1px solid var(--border2);border-radius:12px;
+  padding:12px 14px;margin-bottom:8px
+}
+.sug-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sug-ico{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sug-ttl{font-size:13px;font-weight:600;color:var(--text)}
+.sug-txt{font-size:12px;color:var(--muted2);line-height:1.55;margin-bottom:7px}
+.sug-alts{display:flex;flex-wrap:wrap;gap:5px}
+.sug-alt{
+  font-size:11px;padding:4px 10px;border-radius:10px;cursor:pointer;
+  transition:opacity .1s;font-weight:500
+}
+.sug-alt:active{opacity:.7}
+
+/* ── GAPS SCREEN ── */
+.gap-card{
+  background:var(--s2);border-radius:12px;padding:13px 14px;margin-bottom:8px;
+  border-left:3px solid transparent;transition:opacity .2s
+}
+.gap-card.solved{opacity:.55;border-left-color:var(--green)}
+.gap-card.partial{border-left-color:var(--amber)}
+.gap-card.crit{border-left-color:var(--red)}
+.gap-card.open{border-left-color:var(--amber)}
+.gap-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.gap-left{display:flex;align-items:center;gap:8px}
+.gap-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.gap-nut{font-size:13px;font-weight:600;color:var(--text)}
+.gap-badge{font-size:11px;font-weight:600;white-space:nowrap}
+.gap-desc{font-size:12px;color:var(--muted2);line-height:1.55;margin-bottom:7px}
+.gap-srcs{display:flex;flex-wrap:wrap;gap:5px}
+.gap-src{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500}
+.gap-src-ok{background:rgba(46,204,138,.12);color:var(--green);border:1px solid rgba(46,204,138,.2)}
+.gap-src-tip{background:var(--s3);color:var(--muted2);border:1px solid var(--border2)}
+.gap-src-warn{background:rgba(245,166,35,.1);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+
+/* ── PORTION DIALOG ── */
+.portion-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:300;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px)
+}
+.portion-overlay.open{display:flex}
+.portion-sheet{
+  background:var(--s2);border-radius:20px 20px 0 0;
+  width:100%;padding-bottom:calc(16px + var(--safe-bottom));
+  animation:slideUp .2s ease
+}
+.portion-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 8px}
+.portion-head{padding:12px 20px 16px;border-bottom:1px solid var(--border)}
+.portion-prod{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.portion-emoji{font-size:26px}
+.portion-name{font-size:16px;font-weight:600;color:var(--text)}
+.portion-rec{font-size:12px;color:var(--muted);margin-top:2px}
+.portion-body{padding:20px 20px 8px}
+.portion-label{font-size:12px;color:var(--muted2);margin-bottom:10px;line-height:1.5}
+.portion-input-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.portion-minus,.portion-plus{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:var(--s3);border:1px solid var(--border2);
+  color:var(--text);font-size:22px;font-weight:300;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s;-webkit-tap-highlight-color:transparent
+}
+.portion-minus:active,.portion-plus:active{background:var(--s4)}
+.portion-input-wrap{flex:1;position:relative}
+.portion-input{
+  width:100%;height:44px;border-radius:12px;
+  background:var(--s3);border:1.5px solid var(--border2);
+  color:var(--text);font-size:22px;font-weight:600;text-align:center;
+  font-family:'Golos Text',sans-serif;outline:none;
+  transition:border-color .15s
+}
+.portion-input:focus{border-color:var(--teal)}
+.portion-unit{
+  font-size:13px;color:var(--muted);text-align:center;margin-top:5px
+}
+.portion-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.portion-preset{
+  font-size:12px;padding:6px 12px;border-radius:20px;
+  background:var(--s3);border:1px solid var(--border2);
+  color:var(--muted2);cursor:pointer;transition:all .12s;
+  -webkit-tap-highlight-color:transparent
+}
+.portion-preset:active{opacity:.7}
+.portion-preset.active-preset{background:rgba(31,208,232,.15);color:var(--teal);border-color:rgba(31,208,232,.3)}
+.portion-btns{display:flex;gap:10px;padding:0 20px}
+.portion-confirm{
+  flex:1;height:50px;border-radius:14px;border:none;
+  background:var(--green);color:#0b0f18;
+  font-family:'Golos Text',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;transition:opacity .12s
+}
+.portion-confirm:active{opacity:.8}
+.portion-cancel{
+  height:50px;padding:0 20px;border-radius:14px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--muted);font-family:'Golos Text',sans-serif;font-size:15px;cursor:pointer
+}
+.portion-remove{
+  height:50px;padding:0 16px;border-radius:14px;
+  border:1px solid rgba(232,82,74,.3);background:transparent;
+  color:var(--red);font-family:'Golos Text',sans-serif;font-size:13px;cursor:pointer
+}
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+  z-index:200;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px)
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--s2);border-radius:20px 20px 0 0;
+  width:100%;max-height:88vh;overflow-y:auto;
+  animation:slideUp .22s ease;padding-bottom:var(--safe-bottom)
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0}
+.modal-head{padding:16px 18px 0}
+.modal-badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.modal-name{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:2px}
+.modal-latin{font-size:12px;color:var(--muted);margin-bottom:4px}
+.modal-dose{font-size:13px;color:var(--amber);font-weight:500;margin-bottom:16px}
+.modal-body{padding:0 18px 24px}
+.msec{margin-top:16px}
+.msec-title{font-family:'Unbounded',sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.msec p{font-size:13px;color:#a8bccf;line-height:1.7}
+.use-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.use-tag{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--s3);color:var(--text);border:1px solid var(--border2)}
+.season-bar{display:flex;gap:3px;margin-top:7px;flex-wrap:wrap}
+.month{font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);color:var(--muted);background:var(--s1)}
+.month.on-plant{background:rgba(46,204,138,.15);color:var(--green);border-color:rgba(46,204,138,.3)}
+.month.on-sea{background:rgba(31,208,232,.15);color:var(--teal);border-color:rgba(31,208,232,.3)}
+.month.on-meat{background:rgba(232,82,74,.1);color:#f08080;border-color:rgba(232,82,74,.25)}
+.nut-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.nt{font-size:12px;padding:3px 9px;border-radius:20px;font-weight:500}
+.nt-full{background:rgba(46,204,138,.15);color:var(--green);border:1px solid rgba(46,204,138,.25)}
+.nt-part{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+.warn-box{margin-top:10px;padding:10px 13px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:8px;font-size:13px;color:#fde68a;line-height:1.6}
+/* modal add button */
+.modal-add-btn{
+  width:calc(100% - 36px);margin:12px 18px 4px;padding:14px;
+  border-radius:12px;border:none;font-family:'Golos Text',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .15s
+}
+.modal-add-btn.add{background:var(--green);color:#0b0f18}
+.modal-add-btn.remove{background:var(--s3);color:var(--red);border:1px solid rgba(232,82,74,.3)}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--s4);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">🌿 Рацион Сахалина</div>
+  <div class="topbar-badge" id="topBadge">Ничего не выбрано</div>
+</div>
+
+<!-- SCREENS -->
+<div class="screen" id="screen-products"><div class="screen-inner" id="productList"></div></div>
+<div class="screen" id="screen-analysis" style="display:none"><div class="screen-inner" id="analysisContent"></div></div>
+<div class="screen" id="screen-gaps" style="display:none"><div class="screen-inner" id="gapsContent"></div></div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="btn-products" onclick="showTab('products')">
+    <div class="nb-icon">🛒</div>
+    <div class="nb-label">Продукты</div>
+  </button>
+  <button class="nav-btn" id="btn-analysis" onclick="showTab('analysis')">
+    <div class="nb-icon">📊</div>
+    <div class="nb-label">Анализ</div>
+    <div class="nb-count" id="badge-analysis"></div>
+  </button>
+  <button class="nav-btn" id="btn-gaps" onclick="showTab('gaps')">
+    <div class="nb-icon">⚠️</div>
+    <div class="nb-label">Пробелы</div>
+    <div class="nb-count" id="badge-gaps"></div>
+  </button>
+</nav>
+
+<!-- PORTION DIALOG -->
+<div class="portion-overlay" id="portionOverlay">
+  <div class="portion-sheet">
+    <div class="portion-handle"></div>
+    <div class="portion-head">
+      <div class="portion-prod">
+        <span class="portion-emoji" id="pEmoji"></span>
+        <div>
+          <div class="portion-name" id="pName"></div>
+          <div class="portion-rec" id="pRec"></div>
+        </div>
+      </div>
+    </div>
+    <div class="portion-body">
+      <div class="portion-label" id="pLabel"></div>
+      <div class="portion-input-row">
+        <button class="portion-minus" id="pMinus">−</button>
+        <div class="portion-input-wrap">
+          <input class="portion-input" id="pInput" type="number" inputmode="decimal" min="0">
+        </div>
+        <button class="portion-plus" id="pPlus">+</button>
+      </div>
+      <div class="portion-unit" id="pUnit"></div>
+      <div class="portion-presets" id="pPresets"></div>
+    </div>
+    <div class="portion-btns" id="pBtns"></div>
+  </div>
+</div>
+
+<!-- MODAL (bottom sheet) -->
+<div class="modal-overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div id="mAddBtn"></div>
+    <div class="modal-head">
+      <div class="modal-badge" id="mBadge"></div>
+      <div class="modal-name" id="mName"></div>
+      <div class="modal-latin" id="mLatin"></div>
+      <div class="modal-dose" id="mDose"></div>
+    </div>
+    <div class="modal-body">
+      <div class="msec"><div class="msec-title">О продукте</div><p id="mDesc"></p></div>
+      <div class="msec"><div class="msec-title">Ключевые нутриенты</div><div class="nut-tags" id="mNuts"></div></div>
+      <div class="msec"><div class="msec-title">Как употреблять</div><p id="mUse"></p><div class="use-tags" id="mUseTags"></div></div>
+      <div class="msec">
+        <div class="msec-title">Сезон на Сахалине</div>
+        <p id="mSeasonText"></p>
+        <div class="season-bar" id="mSeasonBar"></div>
+      </div>
+      <div id="mWarn"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const F=2,P=1,N=0,NA=-1;
+const MO=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+
+// Portion config per product key: unit label, step, presets[], defaultVal (= recommended dose in that unit)
+const PORTION={
+  // greens
+  nettle:   {unit:'г',    step:10,  presets:[30,50,100,150], def:75},
+  cheremsha:{unit:'г',    step:10,  presets:[20,50,80,120],  def:50},
+  fern:     {unit:'г',    step:10,  presets:[50,100,150,200],def:120},
+  burdock:  {unit:'г',    step:10,  presets:[50,100,150,200],def:120},
+  dand:     {unit:'г',    step:10,  presets:[30,50,100,150], def:75},
+  limonnik: {unit:'г',    step:5,   presets:[10,20,30,50],   def:25},
+  dudnik:   {unit:'мл',   step:5,   presets:[10,20,30,50],   def:20},
+  eleu:     {unit:'кап.', step:5,   presets:[10,20,30,40],   def:25},
+  // berries
+  klopovka: {unit:'г',    step:10,  presets:[20,30,50,80],   def:40},
+  rose:     {unit:'г',    step:5,   presets:[5,10,15,20],    def:12},
+  seabuck:  {unit:'г',    step:10,  presets:[30,50,100,150], def:75},
+  brusnika: {unit:'г',    step:10,  presets:[50,100,150,200],def:120},
+  morozka:  {unit:'г',    step:10,  presets:[50,80,120,150], def:100},
+  // vegs
+  cucumber: {unit:'г',    step:20,  presets:[50,100,150,200],def:150},
+  tomato:   {unit:'г',    step:20,  presets:[50,100,150,200],def:150},
+  pumpkinveg:{unit:'г',   step:20,  presets:[50,100,150,200],def:150},
+  horseradish:{unit:'ч.л.',step:0.5,presets:[0.5,1,2,3],     def:1},
+  // sea
+  kelp:     {unit:'г',    step:5,   presets:[5,10,20,50],    def:10},
+  grape:    {unit:'г',    step:10,  presets:[30,50,80,100],  def:60},
+  trepang:  {unit:'г',    step:10,  presets:[50,75,100,150], def:75},
+  urchin:   {unit:'г',    step:10,  presets:[20,30,50,80],   def:40},
+  shrimp:   {unit:'г',    step:20,  presets:[50,100,150,200],def:120},
+  crab:     {unit:'г',    step:20,  presets:[50,100,150,200],def:120},
+  squid:    {unit:'г',    step:20,  presets:[50,100,150,200],def:120},
+  octopus:  {unit:'г',    step:20,  presets:[50,100,150,200],def:120},
+  scallop:  {unit:'г',    step:20,  presets:[50,100,150,200],def:120},
+  oyster:   {unit:'шт',   step:1,   presets:[3,6,9,12],      def:6},
+  whelk:    {unit:'г',    step:20,  presets:[50,100,150,200],def:120},
+  redcaviar:{unit:'г',    step:5,   presets:[10,20,30,50],   def:25},
+  pollcockcaviar:{unit:'г',step:5,  presets:[10,20,30,50],   def:25},
+  // meat
+  pollock:  {unit:'г',    step:25,  presets:[100,150,200,250],def:150},
+  salmon:   {unit:'г',    step:25,  presets:[75,100,150,200], def:120},
+  beef:     {unit:'г',    step:25,  presets:[75,100,150,200], def:120},
+  chicken:  {unit:'г',    step:25,  presets:[100,150,200,250],def:150},
+  egg:      {unit:'шт',   step:1,   presets:[1,2,3,4],        def:2},
+  // grain
+  buckwheat:{unit:'г',    step:10,  presets:[50,70,100,150],  def:80},
+  millet:   {unit:'г',    step:10,  presets:[50,70,100,150],  def:70},
+  rice:     {unit:'г',    step:10,  presets:[50,70,100,150],  def:80},
+  lentil:   {unit:'г',    step:10,  presets:[50,70,100,150],  def:80},
+  hemp:     {unit:'ст.л.',step:1,   presets:[1,2,3,4],        def:2},
+  pumpkin:  {unit:'г',    step:5,   presets:[15,20,30,50],    def:25},
+  sesame:   {unit:'ст.л.',step:1,   presets:[1,2,3],          def:2},
+  // fungi — all in grams
+  boletus:  {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  chanterelle:{unit:'г',  step:20,  presets:[50,100,150,200], def:120},
+  redcap:   {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  birchbolt:{unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  butter:   {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  russula:  {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  ryzhik:   {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  gruzd:    {unit:'г',    step:20,  presets:[50,100,150,200], def:100},
+  openyok:  {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  champignon:{unit:'г',   step:20,  presets:[50,100,150,200], def:120},
+  volnushka:{unit:'г',    step:20,  presets:[50,100,150,200], def:100},
+  oyster_f: {unit:'г',    step:20,  presets:[50,100,150,200], def:120},
+  // suppl
+  fishoil:  {unit:'г',    step:0.5, presets:[0.5,1,2,3],      def:1},
+  sealoil:  {unit:'г',    step:1,   presets:[2,4,6,8],        def:6},
+  vitd3sup: {unit:'МЕ',   step:500, presets:[1000,2000,4000], def:2000},
+  magnesium:{unit:'мг',   step:50,  presets:[100,200,300,400],def:300},
+  b12sup:   {unit:'мкг',  step:100, presets:[100,500,1000],   def:1000},
+  blackcumin:{unit:'ч.л.',step:0.5, presets:[0.5,1,1.5,2],   def:1},
+  hempoil:  {unit:'ст.л.',step:1,   presets:[1,2,3],          def:2},
+  pumpkinoil:{unit:'ст.л.',step:1,  presets:[1,2,3],          def:2},
+  sesameoil:{unit:'ст.л.',step:1,   presets:[1,2,3],          def:1},
+};
+// fallback for any missing key
+function getPC(k){ return PORTION[k]||{unit:'г',step:10,presets:[50,100,150,200],def:100}; }
+
+const groups=[
+  {id:'greens', label:'Зелень и травы',  color:'#2ecc8a'},
+  {id:'berries',label:'Ягоды',           color:'#f472b6'},
+  {id:'vegs',   label:'Овощи',           color:'#facc15'},
+  {id:'sea',    label:'Море',            color:'#1fd0e8'},
+  {id:'meat',   label:'Мясо и рыба',     color:'#e8524a'},
+  {id:'grain',  label:'Зерно и семена',  color:'#f5a623'},
+  {id:'fungi',  label:'Грибы',           color:'#9d7ffa'},
+  {id:'suppl',  label:'Добавки',         color:'#38bdf8'},
+];
+
+const products=[
+  {k:'nettle',g:'greens',icon:'🌱',name:'Крапива',dose:'50–100 г свежей',nuts:{vitC:F,vitK:F,vitA:F,vitE:P,bvit:P,b12:N,vitD:N,iron:F,calcium:F,mag:P,iod:N,zinc:P,sel:N,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:P,carbs:N},desc:'Одно из самых богатых дикорастущих растений острова: железо, кальций, магний, витамины K и C в рекордных количествах.',use:'Бланшируют 1–2 минуты — жало нейтрализуется. Супы, салаты, пирожки, квашение.',useTags:['Зелёные щи','Салат','Пирожки','Чай'],season:'Конец апреля — май.',seasonM:[3,4],seasonType:'plant',warn:'Осторожно при приёме антикоагулянтов (варфарин) — высокий витамин K.'},
+  {k:'cheremsha',g:'greens',icon:'🧄',name:'Черемша',dose:'30–80 г',nuts:{vitC:F,vitK:P,vitA:F,vitE:N,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:N,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:F,carbs:N},desc:'Первый весенний дикорос Сахалина. По витамину C превосходит все цитрусовые. Богата фитонцидами и лизоцимом.',use:'Свежей в салатах, в супы, пирожки, омлеты. Солят и маринуют на зиму.',useTags:['Свежий салат','Суп','Засолка','К рыбе'],season:'Конец апреля — май.',seasonM:[3,4],seasonType:'plant',warn:'Очень похожа на ядовитую чемерицу! Обязательно проверять запах — чемерица без запаха.'},
+  {k:'fern',g:'greens',icon:'🌿',name:'Папоротник',dose:'100–150 г варёного',nuts:{vitC:P,vitK:P,vitA:F,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:N,omega:P,protein:P,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Деликатес дальневосточной кухни. Молодые побеги-«улитки» содержат витамины A, C, B2, медь, марганец.',use:'Только молодые побеги до 20 см. Обязательна термообработка или засолка.',useTags:['Жареный','Засолка','Суп','С соевым соусом'],season:'Май — начало июня.',seasonM:[4,5],seasonType:'plant',warn:'Сырым не есть! Содержит тиаминазу и птакилозид.'},
+  {k:'burdock',g:'greens',icon:'🌾',name:'Лопух',dose:'100–150 г корня',nuts:{vitC:P,vitK:P,vitA:P,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:F,antioxid:F,adapt:P,phyto:P,carbs:P},desc:'Корень лопуха — пребиотик №1 в списке (инулин). Содержит арктиин с противовоспалительным действием.',use:'Корень — сырым, варёным, запечённым. Молодые стебли — жарят или тушат.',useTags:['Тушёные стебли','Жареный корень','Суп','Чай из корня'],season:'Стебли: май–июнь. Корень: сентябрь–октябрь.',seasonM:[4,5,8,9],seasonType:'plant',warn:null},
+  {k:'dand',g:'greens',icon:'🌼',name:'Одуванчик',dose:'50–100 г листьев',nuts:{vitC:F,vitK:F,vitA:F,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:N,omega:N,protein:N,fiber:F,antioxid:F,adapt:N,phyto:P,carbs:N},desc:'Листья содержат больше β-каротина, чем морковь. Рекордный витамин K. Корень — желчегонное.',use:'Листья вымочить 20 мин. Цветы — варенье. Корень — кофезаменитель.',useTags:['Салат','Варенье из цветов','Кофезаменитель'],season:'Листья: апрель–май. Корень: осень.',seasonM:[3,4,5,8,9],seasonType:'plant',warn:null},
+  {k:'limonnik',g:'greens',icon:'🍇',name:'Лимонник',dose:'25–30 г / 20–30 кап.',nuts:{vitC:F,vitK:N,vitA:P,vitE:F,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:N,omega:P,protein:N,fiber:N,antioxid:F,adapt:F,phyto:F,carbs:N},desc:'«Ягода пяти вкусов». Схизандрин тонизирует ЦНС и защищает печень. 500+ мг витамина C на 100 г.',use:'Свежие ягоды, чай, варенье, сироп, настойка.',useTags:['Чай','Настойка','Варенье'],season:'Сбор: сентябрь–октябрь.',seasonM:[8,9],seasonType:'plant',warn:'Противопоказан при гипертонии, бессоннице, эпилепсии. Не принимать вечером.'},
+  {k:'dudnik',g:'greens',icon:'🌿',name:'Дудник медвежий',dose:'Корень: отвар 1 ст.л. / настойка 20–30 кап.',nuts:{vitC:P,vitK:N,vitA:N,vitE:N,bvit:N,b12:N,vitD:N,iron:N,calcium:N,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:N,antioxid:P,adapt:P,phyto:F,carbs:N},desc:'Эндемик Сахалина, Камчатки и Курил — вырастает до 3,5 метров. Angelica ursina. Корни содержат кумарины, эфирные масла, дубильные вещества, фурокумарины с антисептическим и фунгицидным действием. В народной медицине — ранозаживляющее, желудочное, потогонное, болеутоляющее. Японское название — хику.',use:'Отвар корня при ЖКТ-заболеваниях. Наружно — ранозаживляющее. Настойка на водке — при мышечных болях. Молодые побеги и черешки листьев можно есть свежими и варёными как овощ.',useTags:['Отвар корня','Наружно','Настойка','Молодые побеги в еду'],season:'Листья и побеги: май–июнь. Корни заготавливают осенью (сентябрь–октябрь).',seasonM:[4,5,8,9],seasonType:'plant',warn:'Фурокумарины усиливают чувствительность кожи к УФ-излучению. Не принимать перед выходом на солнце. Большие дозы токсичны.'},
+  {k:'klopovka',g:'berries',icon:'🔴',name:'Клоповка',dose:'30–50 г или 1 ч.л. сиропа',nuts:{vitC:F,vitK:P,vitA:P,vitE:N,bvit:N,b12:N,vitD:N,iron:P,calcium:N,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:P,antioxid:F,adapt:N,phyto:F,carbs:N},desc:'Эндемик Сахалина — больше нигде в мире. Единственный продукт с двунаправленным действием на давление.',use:'Сироп, перетёртая с сахаром, варенье, настойка.',useTags:['Сироп','Настойка','Варенье'],season:'Ягоды: август–сентябрь.',seasonM:[7,8],seasonType:'plant',warn:'Сильный аллерген. Детям до 7 лет не рекомендуется.'},
+  {k:'rose',g:'berries',icon:'🌹',name:'Шиповник',dose:'10–15 г сушёного (настой)',nuts:{vitC:F,vitK:P,vitA:F,vitE:P,bvit:N,b12:N,vitD:N,iron:P,calcium:P,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по витамину C — в 50 раз больше лимона. Богат рутином, витаминами A и E.',use:'Настой в термосе: 2 ст.л. на 500 мл, 8 часов.',useTags:['Настой','Варенье','Сироп'],season:'Сбор: сентябрь–октябрь после заморозков.',seasonM:[8,9],seasonType:'plant',warn:null},
+  {k:'seabuck',g:'berries',icon:'🟡',name:'Облепиха',dose:'50–100 г',nuts:{vitC:F,vitK:P,vitA:F,vitE:F,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:N,omega:P,protein:N,fiber:P,antioxid:F,adapt:N,phyto:P,carbs:N},desc:'Уникальный состав: C + E + каротиноиды + омега-7. Масло из семян — лучший источник токоферолов.',use:'Морс, варенье, масло (1 ч.л./день).',useTags:['Морс','Варенье','Масло'],season:'Август–октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:null},
+  {k:'brusnika',g:'berries',icon:'🫐',name:'Брусника',dose:'100–150 г',nuts:{vitC:F,vitK:P,vitA:P,vitE:P,bvit:N,b12:N,vitD:N,iron:P,calcium:P,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:F,antioxid:F,adapt:N,phyto:P,carbs:N},desc:'Арбутин — природный антисептик для мочевыводящих путей. Хранится без консервации месяцами.',use:'Свежей, мочёной, морс, варенье, соус к мясу.',useTags:['Свежая','Мочёная','Морс'],season:'Август–сентябрь.',seasonM:[7,8,9],seasonType:'plant',warn:null},
+  {k:'morozka',g:'berries',icon:'🍊',name:'Морошка',dose:'80–120 г',nuts:{vitC:F,vitK:N,vitA:P,vitE:P,bvit:N,b12:N,vitD:N,iron:P,calcium:P,mag:N,iod:N,zinc:N,sel:N,omega:P,protein:N,fiber:P,antioxid:F,adapt:N,phyto:P,carbs:N},desc:'«Болотный янтарь». Витамин C + каротин + омега-3 в одной ягоде.',use:'Свежей, варенье, морс, заморозка.',useTags:['Свежая','Варенье','Морс','Заморозка'],season:'Июль. Сезон 2–3 недели.',seasonM:[6],seasonType:'plant',warn:'Перерабатывать или замораживать в день сбора.'},
+  {k:'cucumber',g:'vegs',icon:'🥒',name:'Огурец',dose:'100–200 г',nuts:{vitC:P,vitK:P,vitA:N,vitE:N,bvit:N,b12:N,vitD:N,iron:N,calcium:N,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по гидратации — 95% воды. Кремний укрепляет суставы, кожу и сосуды.',use:'Свежим в салатах. Кожура содержит больше нутриентов — не снимать.',useTags:['Свежий в салат','Малосольные','Со сметаной'],season:'Грунтовые сахалинские — июль–сентябрь.',seasonM:[6,7,8],seasonType:'plant',warn:null},
+  {k:'tomato',g:'vegs',icon:'🍅',name:'Помидор',dose:'150–200 г',nuts:{vitC:F,vitK:P,vitA:F,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:N,mag:P,iod:N,zinc:N,sel:P,omega:N,protein:N,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Ликопин — мощнейший антиоксидант. При термообработке усваивается в 2–4× лучше. Богат витамином C.',use:'Свежим, варёным, тушёным. С маслом — ликопин усваивается лучше.',useTags:['Свежий в салат','Томатный соус','Запечённый'],season:'Грунтовые сахалинские — август–сентябрь.',seasonM:[7,8],seasonType:'plant',warn:null},
+  {k:'pumpkinveg',g:'vegs',icon:'🎃',name:'Тыква',dose:'150–200 г',nuts:{vitC:P,vitK:P,vitA:F,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:N,omega:N,protein:P,fiber:F,antioxid:F,adapt:N,phyto:N,carbs:P},desc:'Рекордсмен по β-каротину — 100 г покрывают суточную норму витамина A. Богата калием, пектином.',use:'Запечённая, варёная. Суп-пюре, каша с пшеном.',useTags:['Суп-пюре','Запечённая','Каша с пшеном'],season:'Сахалинская тыква: август–октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:null},
+  {k:'horseradish',g:'vegs',icon:'🌱',name:'Корень хрена',dose:'1–2 ч.л. тёртого / день',nuts:{vitC:F,vitK:P,vitA:P,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:P,omega:P,protein:N,fiber:F,antioxid:F,adapt:N,phyto:F,carbs:N},desc:'Рекордсмен по витамину C среди корнеплодов — в 5 раз больше апельсина. Рекорд по кремнию (130% нормы). Синигрин при расщеплении образует аллиловое масло — мощный антисептик, убивает бактерии включая туберкулёзную палочку. Лизоцим — природный антибиотик. Глюкозинолатов в 10 раз больше чем в брокколи — защита от рака. Фитонциды уничтожают патогенную флору. Стимулирует пищеварение, снижает давление.',use:'Тёртый свежий — как приправа к мясу, рыбе, холодцу. Сохраняет свойства только свежий. Добавлять в блюдо перед подачей. Домашний значительно лучше магазинного.',useTags:['Приправа к мясу/рыбе','К холодцу','В салат','Хреновуха'],season:'Корень копают осенью (сентябрь–ноябрь) или ранней весной. Хранится в холодильнике 6–9 месяцев.',seasonM:[8,9,10],seasonType:'plant',warn:'Раздражает слизистую желудка и кишечника — не злоупотреблять. Противопоказан при гастрите, язве, болезнях почек. После измельчения использовать быстро — темнеет и теряет силу.'},
+  {k:'kelp',g:'sea',icon:'🌊',name:'Мор. капуста',dose:'5–10 г сушёной',nuts:{vitC:P,vitK:P,vitA:P,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:F,mag:P,iod:F,zinc:P,sel:P,omega:P,protein:N,fiber:F,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по йоду. Фукоидан — иммуномодулятор. Альгинаты выводят тяжёлые металлы.',use:'В салат, суп, гарнир. 5–10 г сушёной = суточная норма йода.',useTags:['Салат','Суп','Гарнир','Сушёная'],season:'Промысел: июнь–сентябрь.',seasonM:[5,6,7,8],seasonType:'sea',warn:'При заболеваниях щитовидной железы — только по назначению врача.'},
+  {k:'grape',g:'sea',icon:'🫧',name:'Мор. виноград',dose:'50–80 г',nuts:{vitC:P,vitK:P,vitA:F,vitE:P,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:F,zinc:P,sel:P,omega:F,protein:N,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Умибудо — деликатес Окинавы. Уникальные каротиноиды для зрения. Рекордные омега-3 среди водорослей.',use:'Свежим с соевым соусом. Сушёный — в супы.',useTags:['С соевым соусом','Салат','Суп'],season:'Свежий: июль–август.',seasonM:[6,7],seasonType:'sea',warn:null},
+  {k:'trepang',g:'sea',icon:'🐚',name:'Трепанг',dose:'50–100 г варёного',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:P,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:P,omega:P,protein:F,fiber:N,antioxid:P,adapt:F,phyto:P,carbs:N},desc:'«Морской женьшень» Сахалина. 85–90% белка в сухом весе. Голотурины — мощные иммуностимуляторы.',use:'Варёный, тушёный. Сушёный замачивать 2–3 суток.',useTags:['Варёный','Тушёный','Настойка','Суп'],season:'Промысел: лето–осень.',seasonM:[6,7,8,9],seasonType:'sea',warn:'Любительская добыча ограничена законом.'},
+  {k:'urchin',g:'sea',icon:'🟠',name:'Икра ежа',dose:'30–60 г свежей',nuts:{vitC:P,vitK:P,vitA:P,vitE:F,bvit:P,b12:P,vitD:P,iron:P,calcium:P,mag:P,iod:P,zinc:F,sel:F,omega:F,protein:F,fiber:N,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Уни — один из наиболее питательных продуктов. Спинохром — антиоксидант в 10× мощнее витамина E.',use:'Только свежая в день добычи. С лимоном, на тосте, суши.',useTags:['С лимоном','На тосте','Суши'],season:'Декабрь–апрель. Зимой самая насыщенная.',seasonM:[0,1,2,3,11],seasonType:'sea',warn:'Хранить не более 24 часов.'},
+  {k:'shrimp',g:'sea',icon:'🦐',name:'Креветка',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:P,b12:F,vitD:N,iron:P,calcium:P,mag:P,iod:F,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Богатейший источник йода, B12 и селена при минимуме калорий. Астаксантин — мощный антиоксидант.',use:'Варить 2–4 мин (до розового цвета). Дольше — резиновые.',useTags:['Варёные','Уха','Салат','На пару'],season:'Промысел: круглый год.',seasonM:[6,7,8,9],seasonType:'sea',warn:null},
+  {k:'crab',g:'sea',icon:'🦀',name:'Краб',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:F,b12:F,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:F,sel:F,omega:P,protein:F,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по цинку среди морепродуктов. Высококачественный белок, B12, селен.',use:'Варить живым 15–20 мин. Холодный краб — лучший вкус.',useTags:['Варёный','Салат','Суп','Холодный'],season:'Октябрь–март (стригун).',seasonM:[9,10,11,0,1,2],seasonType:'sea',warn:null},
+  {k:'squid',g:'sea',icon:'🦑',name:'Кальмар',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:F,b12:F,vitD:N,iron:P,calcium:P,mag:P,iod:F,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Диетический белок при минимуме жиров. Таурин защищает сердце и зрение.',use:'Варить 2–3 минуты (не дольше — резиновый).',useTags:['Варёный 2–3 мин','Суши','Салат','Фаршированный'],season:'Путина: август–октябрь.',seasonM:[7,8,9],seasonType:'sea',warn:'Готовить строго 2–3 мин.'},
+  {k:'octopus',g:'sea',icon:'🐙',name:'Осьминог',dose:'100–150 г',nuts:{vitC:P,vitK:N,vitA:N,vitE:N,bvit:F,b12:F,vitD:N,iron:F,calcium:P,mag:P,iod:P,zinc:F,sel:P,omega:P,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по железу среди морепродуктов. Таурин, B12, цинк. Низкокалорийный полноценный белок.',use:'Варить на тихом огне 40–60 мин. Предварительно отбить.',useTags:['Варёный','Гриль','Салат','Маринованный'],season:'Лето–осень у берегов Сахалина.',seasonM:[6,7,8,9],seasonType:'sea',warn:null},
+  {k:'scallop',g:'sea',icon:'🐚',name:'Курильский гребешок',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:F,b12:F,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Добывается водолазами у берегов Курил и Сахалина — один из лучших в мире. Почти чистый белок при нулевом гликемическом индексе. Рекордные B12, фосфор и холин для нервной системы. Снижает холестерин, нормализует давление.',use:'Жарить 2–3 мин на раскалённой сковороде — внутри должен быть чуть сырым. Сашими, суп, ризотто, суши. Переготовить легко — становится резиновым.',useTags:['Жареный 2–3 мин','Сашими/суши','Суп','Ризотто'],season:'Добывается круглый год. Шоковая заморозка сохраняет все нутриенты.',seasonM:[],seasonType:'sea',warn:null},
+  {k:'oyster',g:'sea',icon:'🦪',name:'Устрица',dose:'6–12 штук (100–150 г)',nuts:{vitC:P,vitK:N,vitA:P,vitE:P,bvit:F,b12:F,vitD:P,iron:F,calcium:P,mag:P,iod:F,zinc:F,sel:F,omega:P,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Нутриентная бомба: 6 устриц покрывают суточную норму меди, железа и цинка. Содержание B12 — более 500% суточной нормы на 100 г. Цинк в устрицах — лучший из всех продуктов, стимулирует тестостерон. Керамиды борются с раком молочной железы (доказано учёными Майами).',use:'Свежими живыми — с лимоном, без соли. Именно так сохраняются все полезные вещества. Можно запекать на гриле, в белом вине.',useTags:['Свежими с лимоном','На гриле','В белом вине','Сашими'],season:'На Сахалине тихоокеанская устрица добывается июнь–октябрь. Зимой — привозная.',seasonM:[5,6,7,8,9],seasonType:'sea',warn:'Отравление несвежими устрицами крайне опасно. Только живые (раковина закрыта) или из проверенного источника.'},
+  {k:'whelk',g:'sea',icon:'🐌',name:'Трубач',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:P,bvit:F,b12:F,vitD:N,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Дальневосточный деликатес, добывается в Охотском море круглый год. Рекордсмен по содержанию селена среди моллюсков — защищает от старения и онкологии. Богат медью и железом (6 штук = суточная норма). Вкус — нежнее осьминога, напоминает рапаны.',use:'Варить 5–7 мин (не дольше — резиновый). Жарить в кляре, тушить в сливках. Едят мягкое тело — ложноножку.',useTags:['Варёный 5–7 мин','В кляре','Тушёный в сливках','Салат'],season:'Промысел: круглый год. Наиболее крупные — дальневосточные виды.',seasonM:[],seasonType:'sea',warn:null},
+  {k:'redcaviar',g:'sea',icon:'🍱',name:'Красная икра',dose:'20–30 г (2–3 ч.л.) в день',nuts:{vitC:P,vitK:N,vitA:F,vitE:P,bvit:F,b12:F,vitD:P,iron:F,calcium:P,mag:F,iod:F,zinc:P,sel:F,omega:F,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Концентрат питательных веществ для развития новой жизни — поэтому состав уникальный. B12 — 666% суточной нормы на 100 г. Железо, магний, селен, йод в легкоусвояемой форме. Рекордный холин (98% нормы) — критичен для мозга и печени. Лизин тормозит рост раковых клеток. Астаксантин — мощный антиоксидант. Горбуша и кета дают лучшую по вкусу икру без горечи.',use:'Бутерброды с маслом, на блинах, с яйцом и авокадо, в пасту с лососем. Лучшая икра — замороженная слабосолёная (состав: икра + соль). Без консервантов и растительного масла.',useTags:['На бутерброде с маслом','С блинами','С яйцом','В пасту с лососем'],season:'Путина горбуши и кеты: июль–сентябрь. Сахалинская — одна из лучших в мире.',seasonM:[6,7,8],seasonType:'sea',warn:'Много соли — задерживает жидкость, повышает давление. Норма: не более 30 г в день. Аллергия на рыбу распространяется и на икру.'},
+  {k:'pollcockcaviar',g:'sea',icon:'🟡',name:'Икра минтая',dose:'20–40 г в день',nuts:{vitC:P,vitK:N,vitA:P,vitE:P,bvit:F,b12:F,vitD:N,iron:F,calcium:P,mag:P,iod:P,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Самый недооценённый продукт Охотского моря. B12 — 1880% суточной нормы на 100 г — абсолютный рекорд среди всех продуктов в списке. Селен — 168%, холин — 49%, кобальт — 1700%, медь — 40%. Полноценный белок с незаменимыми аминокислотами. В Японии — деликатес тарако и ментайко, 8 разновидностей блюд. Стоит в разы дешевле красной икры при сопоставимой пищевой ценности.',use:'На бутерброде, в салатах, как паста. Японский стиль — тарако с рисом, в онигири, как соус к пасте. В сыром виде (свежая) или малосольная — максимум пользы.',useTags:['На бутерброде','Тарако с рисом','В онигири','Соус к пасте'],season:'Промысел минтая: круглый год. Охотское море — главный мировой промысловый район.',seasonM:[],seasonType:'sea',warn:'Много соли в консервированной. Выбирать с коротким составом: икра + соль. Без растительного масла и консервантов.'},
+  {k:'pollock',g:'meat',icon:'🐟',name:'Минтай',dose:'150–200 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:F,b12:F,vitD:P,iron:P,calcium:P,mag:P,iod:F,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Самая доступная рыба Охотского моря. Рекордный B12, йод и селен. Подходит для ежедневного употребления.',use:'Варёный, тушёный, запечённый. Уха, котлеты.',useTags:['Уха','Запечённый','Тушёный','Котлеты'],season:'Доступен круглый год.',seasonM:[],seasonType:'meat',warn:null},
+  {k:'salmon',g:'meat',icon:'🐠',name:'Лосось',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:P,bvit:F,b12:F,vitD:F,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:F,omega:F,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Лучший источник ДГК/ЭПК и витамина D3. Астаксантин — мощный антиоксидант.',use:'Слабосолёный, запечённый, на пару. 2–3 раза в неделю.',useTags:['Слабосолёный','Запечённый','На пару','Уха'],season:'Путина: июль–сентябрь.',seasonM:[6,7,8],seasonType:'meat',warn:null},
+  {k:'beef',g:'meat',icon:'🥩',name:'Говядина',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:F,b12:F,vitD:N,iron:F,calcium:N,mag:P,iod:N,zinc:F,sel:P,omega:N,protein:F,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Единственный продукт с гемовым железом — усваивается в 3–5× лучше растительного. Закрывает B12, железо, цинк.',use:'Варёная, тушёная. Говяжья печень 1–2× в неделю — концентрат нутриентов.',useTags:['Варёная','Тушёная','Суп/борщ','Печень'],season:'Доступна круглый год.',seasonM:[],seasonType:'meat',warn:null},
+  {k:'chicken',g:'meat',icon:'🍗',name:'Курица',dose:'150–200 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:F,b12:P,vitD:N,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:F,omega:N,protein:F,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Самый доступный источник полноценного белка. Богата ниацином (B3) и селеном. Бульон из костей — коллаген.',use:'Запечённая, тушёная. Бульон из целой курицы — отдельная ценность.',useTags:['Запечённая','Бульон из костей','Тушёная','Варёная'],season:'Доступна круглый год.',seasonM:[],seasonType:'meat',warn:null},
+  {k:'egg',g:'meat',icon:'🥚',name:'Яйцо куриное',dose:'2–3 яйца',nuts:{vitC:N,vitK:N,vitA:F,vitE:P,bvit:F,b12:F,vitD:P,iron:P,calcium:P,mag:P,iod:P,zinc:P,sel:F,omega:P,protein:F,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Один из самых нутриентно-плотных продуктов. Полный набор аминокислот. Холин для мозга. Желток — D3 и B12.',use:'Варёные всмятку (6 мин) — максимум нутриентов.',useTags:['Варёные всмятку','Омлет','Яичница','Пашот'],season:'Доступны круглый год.',seasonM:[],seasonType:'meat',warn:null},
+  {k:'buckwheat',g:'grain',icon:'🌰',name:'Гречка',dose:'70–100 г сухой',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:F,b12:N,vitD:N,iron:F,calcium:N,mag:F,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:F,antioxid:P,adapt:N,phyto:N,carbs:F},desc:'Лучшая крупа по нутриентному профилю. Рутин укрепляет сосуды. Нет глютена. Низкий ГИ (54).',use:'Варить 15–20 мин или запаривать кипятком на ночь.',useTags:['Каша','Запаренная','Пророщенная','Гарнир'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:null},
+  {k:'millet',g:'grain',icon:'🌾',name:'Пшено',dose:'60–80 г сухого',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:N,vitD:N,iron:P,calcium:N,mag:F,iod:N,zinc:P,sel:N,omega:N,protein:P,fiber:F,antioxid:N,adapt:N,phyto:N,carbs:F},desc:'Единственная крупа со щелочной реакцией. Кремний для суставов. Выводит тяжёлые металлы.',use:'Промыть холодной водой перед варкой. 25 мин. С тыквой — классика.',useTags:['Каша','С тыквой','Запеканка'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Не более 3–4 раз в неделю.'},
+  {k:'rice',g:'grain',icon:'🍚',name:'Рис',dose:'70–100 г сухого',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:N,vitD:N,iron:N,calcium:N,mag:P,iod:N,zinc:N,sel:P,omega:N,protein:P,fiber:P,antioxid:N,adapt:N,phyto:N,carbs:F},desc:'Базовый источник медленных углеводов. Коричневый рис значительно богаче нутриентами чем белый.',use:'Белый — 20 мин. Коричневый — 40 мин.',useTags:['Гарнир','Суши','С морепродуктами'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Белый рис — высокий ГИ (72). Предпочитать коричневый (ГИ 55).'},
+  {k:'lentil',g:'grain',icon:'🫘',name:'Чечевица',dose:'70–100 г сухой',nuts:{vitC:P,vitK:P,vitA:P,vitE:N,bvit:F,b12:N,vitD:N,iron:F,calcium:P,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:F,antioxid:P,adapt:N,phyto:N,carbs:P},desc:'Богатейший источник растительного белка и железа. С крупами — полный аминокислотный профиль.',use:'Варить 15–30 мин. Не требует замачивания (красная).',useTags:['Суп','Каша','Котлеты','Хумус'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:null},
+  {k:'hemp',g:'grain',icon:'🌿',name:'Семена конопли',dose:'2–3 ст.л. (30 г)',nuts:{vitC:P,vitK:P,vitA:P,vitE:F,bvit:F,b12:N,vitD:N,iron:F,calcium:F,mag:F,iod:N,zinc:F,sel:P,omega:P,protein:F,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Единственное растение с полным набором незаменимых аминокислот. Идеальное омега-6/омега-3 (3:1).',use:'В кашу, салат, смузи. Масло — только в заправки, не жарить.',useTags:['В кашу','Смузи','Салат','Масло в заправку'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:null},
+  {k:'pumpkin',g:'grain',icon:'🎃',name:'Тыкв. семечки',dose:'30 г (горсть)',nuts:{vitC:N,vitK:N,vitA:N,vitE:F,bvit:P,b12:N,vitD:N,iron:F,calcium:P,mag:F,iod:N,zinc:F,sel:P,omega:P,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Лидер по цинку среди растений. Кукурбитин — противопаразитарное действие.',use:'Сырые или сушёные. Горсть в день. В салат, кашу.',useTags:['Горсть в день','В салат','В кашу'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Жарка разрушает омега-3.'},
+  {k:'sesame',g:'grain',icon:'⚪',name:'Кунжут',dose:'1–2 ст.л. (15–20 г)',nuts:{vitC:N,vitK:P,vitA:N,vitE:F,bvit:P,b12:N,vitD:N,iron:F,calcium:F,mag:F,iod:N,zinc:F,sel:P,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по кальцию среди растений (975 мг/100 г). Сезамин с гормонобалансирующим эффектом.',use:'Тахини (паста) — 1 ст.л./день. Масло в заправки.',useTags:['Тахини','Масло','Посыпка'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:null},
+  {k:'boletus',g:'fungi',icon:'🍄',name:'Белый гриб',dose:'100–200 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:F,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:F,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Король грибов. Максимум D2 при сушке на солнце. Богатый белок с незаменимыми аминокислотами.',use:'Варить 20 мин. Сушить срезом к солнцу для D2. Жарить, мариновать.',useTags:['Суп','Сушёный','Жареный','Маринованный'],season:'Июль — сентябрь.',seasonM:[6,7,8],seasonType:'plant',warn:'Собирать вдали от дорог. Сырыми не есть.'},
+  {k:'chanterelle',g:'fungi',icon:'🍄',name:'Лисичка',dose:'100–200 г',nuts:{vitC:N,vitK:N,vitA:F,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Рекордсмен по β-каротину. Хиноманноза уничтожает яйца паразитов. Никогда не бывает червивой.',use:'Жарить без отваривания. Суп, маринование, заморозка.',useTags:['Жареная','Суп','Маринованная','Заморозка'],season:'Середина июля — сентябрь.',seasonM:[6,7,8],seasonType:'plant',warn:'Не путать с лисичкой ложной (полая ножка, растёт на пнях).'},
+  {k:'redcap',g:'fungi',icon:'🍄',name:'Подосиновик',dose:'100–200 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:F,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Белка больше чем в мясе (по сухому весу). Лектин в шляпке — противоопухолевое действие.',use:'Варить 20–30 мин. Синеет на срезе — норма.',useTags:['Суп','Жареный','Сушёный','Маринованный'],season:'Июль — октябрь.',seasonM:[6,7,8,9],seasonType:'plant',warn:'Не собирать вблизи дорог.'},
+  {k:'birchbolt',g:'fungi',icon:'🍄',name:'Подберёзовик',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Содержит лецитин — важен для нервной системы. Один из самых массовых грибов Сахалина.',use:'Варить 20 мин. Жарить, сушить, мариновать.',useTags:['Суп','Жареный','Сушёный','Маринованный'],season:'Июль — октябрь.',seasonM:[6,7,8,9],seasonType:'plant',warn:null},
+  {k:'butter',g:'fungi',icon:'🍄',name:'Маслёнок',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:P,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Смолистые вещества с обезболивающим эффектом. Лецитин и витамины группы B.',use:'Обязательно снять плёнку со шляпки. Варить 15–20 мин.',useTags:['Маринованный','Жареный','Суп'],season:'Август — октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:'Снять слизистую кожицу перед готовкой.'},
+  {k:'russula',g:'fungi',icon:'🍄',name:'Сыроежка',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:N,sel:N,omega:N,protein:P,fiber:P,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Самый массовый гриб Сахалина. Лучшие — с зелёной и фиолетово-зелёной шляпкой.',use:'Жарить, варить, солить сырыми.',useTags:['Жареная','Солёная','Суп'],season:'Июль — октябрь.',seasonM:[6,7,8,9],seasonType:'plant',warn:'Яркие красные — с осторожностью, отварить обязательно.'},
+  {k:'ryzhik',g:'fungi',icon:'🍄',name:'Рыжик',dose:'80–150 г',nuts:{vitC:N,vitK:N,vitA:P,vitE:P,bvit:P,b12:N,vitD:P,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'1-я категория пищевой ценности. Лактариовиолин — природный антибиотик. Витамин A, железо.',use:'Солить сырыми без отваривания — лучший способ.',useTags:['Солёный сырым','Жареный','Маринованный'],season:'Август — октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:null},
+  {k:'gruzd',g:'fungi',icon:'🍄',name:'Груздь',dose:'80–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:N,omega:N,protein:P,fiber:P,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'1-я категория в солёном виде. Рекордный тиамин (B1) среди грибов.',use:'Вымочить 2–3 дня, затем солить. Суп-груздянка — классика.',useTags:['Солёный','Суп-груздянка','Жареный'],season:'Август — октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:'Обязательно длительное вымачивание.'},
+  {k:'openyok',g:'fungi',icon:'🍄',name:'Опёнок',dose:'100–200 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:F,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Завершает грибной сезон. Богат цинком, медью, фосфором. Маринованные — популярная заготовка.',use:'Обязательно варить 30–40 мин (первую воду слить).',useTags:['Маринованный','Жареный','Суп'],season:'Сентябрь — октябрь.',seasonM:[8,9],seasonType:'plant',warn:'Есть ядовитый двойник — ложный опёнок (нет кольца, горький вкус).'},
+  {k:'champignon',g:'fungi',icon:'🍄',name:'Шампиньон',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Можно есть сырыми. Богат эрготионеином (антиоксидант) и D2. Растёт на лугах Сахалина.',use:'Жарить, варить, запекать, есть сырыми. Сушить на солнце для D2.',useTags:['Жареный','Суп','Сырым в салат'],season:'Июль — сентябрь.',seasonM:[6,7,8],seasonType:'plant',warn:'Не путать с бледной поганкой (белые пластинки у поганки).'},
+  {k:'volnushka',g:'fungi',icon:'🍄',name:'Волнушка',dose:'80–120 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:P,b12:N,vitD:N,iron:P,calcium:N,mag:P,iod:N,zinc:N,sel:N,omega:N,protein:P,fiber:P,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Ценный гриб для засолки. Фунгистерин, антибактериальные вещества.',use:'Вымочить 1–2 дня. Солить горячим или холодным способом.',useTags:['Солёная','Маринованная'],season:'Август — октябрь.',seasonM:[7,8,9],seasonType:'plant',warn:'Условно-съедобная. Обязательное вымачивание.'},
+  {k:'oyster',g:'fungi',icon:'🍄',name:'Вешенка',dose:'100–150 г',nuts:{vitC:N,vitK:N,vitA:N,vitE:P,bvit:F,b12:N,vitD:P,iron:P,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:P,fiber:P,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Ловастин снижает холестерин. Растёт до морозов. Хитин стимулирует иммунитет.',use:'Жарить 5–7 мин. Не переваривать.',useTags:['Жареная','Суп','Тушёная'],season:'Июль — ноябрь.',seasonM:[6,7,8,9,10],seasonType:'plant',warn:null},
+  {k:'eleu',g:'suppl',icon:'🌿',name:'Элеутерококк',dose:'20–30 кап. × 2/день',nuts:{vitC:P,vitK:NA,vitA:NA,vitE:NA,bvit:NA,b12:N,vitD:N,iron:NA,calcium:NA,mag:NA,iod:NA,zinc:NA,sel:NA,omega:NA,protein:NA,fiber:NA,antioxid:F,adapt:F,phyto:P,carbs:N},desc:'Мощный адаптоген Сахалина. Повышает устойчивость к стрессу, нормализует давление.',use:'Настойка: 20–30 капель до еды курсами 3–4 недели. Не вечером.',useTags:['Настойка','Отвар корня'],season:'Аптека — круглый год.',seasonM:[],seasonType:'plant',warn:'Противопоказан при гипертонии, бессоннице, беременности.'},
+  {k:'fishoil',g:'suppl',icon:'🫙',name:'Рыбий жир',dose:'1–2 г ДГК+ЭПК / день',nuts:{vitC:N,vitK:N,vitA:P,vitE:N,bvit:N,b12:N,vitD:F,iron:N,calcium:N,mag:N,iod:N,zinc:N,sel:N,omega:F,protein:N,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Закрывает D3 и омега-3 одновременно. Триглицеридная форма усваивается на 70% лучше этиловых эфиров.',use:'Принимать с едой, содержащей жир. Хранить в холодильнике.',useTags:['С едой','Утром или в обед','Хранить в холодильнике'],season:'Особенно важен октябрь–март.',seasonM:[],seasonType:'plant',warn:'Не менее 500 мг ДГК+ЭПК на капсулу. Триглицеридная форма лучше.'},
+  {k:'sealoil',g:'suppl',icon:'🦭',name:'Тюлений жир',dose:'6 г / день (2–3 капсулы)',nuts:{vitC:N,vitK:N,vitA:F,vitE:P,bvit:N,b12:N,vitD:F,iron:N,calcium:N,mag:N,iod:P,zinc:N,sel:N,omega:F,protein:N,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Превосходит рыбий жир по составу омега-кислот. Уникальная DPA (докозапентаеновая кислота) — есть только в жире морских млекопитающих и женском молоке, лечит атеросклероз. Содержит 11 жирных кислот омега-3/6/7/9 (73% состава). Сквален — онкопротектор. Витамины A, D, E, K, F. Усваивается лучше рыбьего жира — форма триглицеридов до 90%. 6 г закрывают суточную норму по всем жирным кислотам и жирорастворимым витаминам.',use:'2–3 капсулы в день с едой. Лучше утром. Жир тюленя ларга с Сахалина — один из самых чистых источников.',useTags:['2–3 капсулы с едой','Утром','Сахалинский ларга — лучший'],season:'Круглый год. Местный тюлень ларга — Охотское море.',seasonM:[],seasonType:'plant',warn:'Разжижает кровь — осторожно с антикоагулянтами. Беременным — только по назначению врача. Проверять качество сырья — возможны тяжёлые металлы при плохой очистке.'},
+  {k:'vitd3sup',g:'suppl',icon:'☀️',name:'Витамин D3 (БАД)',dose:'2000–4000 МЕ / день',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:N,b12:N,vitD:F,iron:N,calcium:P,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'На Сахалине дефицит D3 у 80%+ населения октябрь–апрель. Самая важная добавка для жителей острова.',use:'Утром с жирной едой. D3 лучше с K2 (MK-7) — кальций идёт в кости.',useTags:['Утром с едой','D3 + K2','Октябрь–апрель'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Целевой уровень 25(OH)D — 40–60 нг/мл. Идеально сдать анализ.'},
+  {k:'magnesium',g:'suppl',icon:'💊',name:'Магний (БАД)',dose:'300–400 мг / день',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:N,b12:N,vitD:N,iron:N,calcium:N,mag:F,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Участвует в 300+ реакциях. Дефицит — спазмы, тревога, плохой сон. Стресс и кофе вымывают.',use:'Глицинат или малат — лучшие формы. Вечером перед сном.',useTags:['Вечером перед сном','Глицинат или малат'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Оксид магния почти не усваивается.'},
+  {k:'b12sup',g:'suppl',icon:'💊',name:'Витамин B12 (БАД)',dose:'1000 мкг × 1/нед',nuts:{vitC:N,vitK:N,vitA:N,vitE:N,bvit:N,b12:F,vitD:N,iron:N,calcium:N,mag:N,iod:N,zinc:N,sel:N,omega:N,protein:N,fiber:N,antioxid:N,adapt:N,phyto:N,carbs:N},desc:'Критически важен при снижении мяса/рыбы. Дефицит развивается медленно — поражает нервы.',use:'Метилкобаламин: сублингвально. 1×/нед или ежедневно 100 мкг.',useTags:['Метилкобаламин','Сублингвально'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Актуален при вегетарианстве или после 50 лет.'},
+  {k:'blackcumin',g:'suppl',icon:'🌑',name:'Чёрный тмин (масло)',dose:'1 ч.л. масла или 1 г семян / день',nuts:{vitC:P,vitK:N,vitA:P,vitE:F,bvit:P,b12:N,vitD:N,iron:P,calcium:P,mag:P,iod:N,zinc:P,sel:N,omega:P,protein:P,fiber:P,antioxid:F,adapt:P,phyto:F,carbs:N},desc:'Nigella sativa — «лекарство от всего кроме смерти» по хадису. Уникальное вещество тимохинон доказанно снижает воспаление, обладает антибактериальным, антивирусным и противораковым действием. Более 450 научных исследований с 1964 года. Улучшает иммунитет, снижает аллергию, нормализует сахар и холестерин. Содержит 8 незаменимых аминокислот, витамины B, D, C, E, каротиноиды, фитостеролы.',use:'Масло: 1 ч.л. натощак или с мёдом. Семена: в выпечку, каши, салаты, маринады. Не нагревать масло — только в холодные блюда. Курсами 1–3 месяца.',useTags:['1 ч.л. масла натощак','С мёдом','В выпечку','В кашу','В салат'],season:'Круглый год. Масло холодного отжима лучше термообработанного.',seasonM:[],seasonType:'plant',warn:'Не жарить масло — разрушается тимохинон. При беременности — осторожно, может стимулировать маточные сокращения. Не сочетать с антикоагулянтами.'},
+  {k:'hempoil',g:'suppl',icon:'🌿',name:'Масло конопли',dose:'1–2 ст.л. / день',nuts:{vitC:N,vitK:P,vitA:P,vitE:F,bvit:N,b12:N,vitD:N,iron:N,calcium:N,mag:P,iod:N,zinc:P,sel:P,omega:P,protein:N,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Лучшее соотношение омега-6/омега-3 среди растительных масел (3:1 — идеал). Рекордный гамма-линоленол. Витамин E, фитостеролы, хлорофилл. Нерафинированное конопляное масло — одно из самых сбалансированных для ежедневного применения.',use:'Только в холодные блюда и заправки — не нагревать. В салаты, смузи, на хлеб. 1–2 ст.л. в день.',useTags:['В заправку салата','В смузи','На хлеб','В соус'],season:'Круглый год. Хранить в холодильнике.',seasonM:[],seasonType:'plant',warn:'Не нагревать — разрушаются омега-3. Хранить в тёмном прохладном месте.'},
+  {k:'pumpkinoil',g:'suppl',icon:'🎃',name:'Масло тыквенных семечек',dose:'1–2 ст.л. / день',nuts:{vitC:N,vitK:N,vitA:N,vitE:F,bvit:P,b12:N,vitD:N,iron:P,calcium:N,mag:P,iod:N,zinc:F,sel:P,omega:P,protein:N,fiber:N,antioxid:P,adapt:N,phyto:N,carbs:N},desc:'Концентрат цинка и витамина E. Дельта-7-стерол — уникальное вещество, улучшает здоровье простаты и нормализует гормональный фон. Антиоксиданты снижают воспаление. Противопаразитарное действие (кукурбитин).',use:'В заправки, соусы, на овощи. Не нагревать. 1–2 ст.л. в день.',useTags:['В заправку','Соус','На овощи','В смузи'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:'Только холодный отжим. Не жарить.'},
+  {k:'sesameoil',g:'suppl',icon:'⚪',name:'Кунжутное масло',dose:'1–2 ст.л. / день',nuts:{vitC:N,vitK:P,vitA:N,vitE:F,bvit:N,b12:N,vitD:N,iron:P,calcium:F,mag:P,iod:N,zinc:P,sel:P,omega:N,protein:N,fiber:N,antioxid:F,adapt:N,phyto:N,carbs:N},desc:'Тахини (паста из кунжута) и масло — рекорд по кальцию среди растительных масел. Сезамин и сезамолин — уникальные лигнаны с антиоксидантным и гормонобалансирующим действием. Поддерживает здоровье печени, снижает воспаление.',use:'Нерафинированное — в холодные блюда и заправки. Тёмное (жареный кунжут) — для азиатских соусов, каплями. Тахини — 1 ст.л./день.',useTags:['Тахини 1 ст.л./день','В заправку','Азиатские соусы','На хумус'],season:'Круглый год.',seasonM:[],seasonType:'plant',warn:null},
+];
+
+const nutDefs=[
+  {k:'vitC',name:'Витамин C',crit:true},{k:'vitA',name:'Витамин A',crit:false},
+  {k:'vitE',name:'Витамин E',crit:false},{k:'vitK',name:'Витамин K',crit:false},
+  {k:'bvit',name:'Витамины B1/B2/B3',crit:false},{k:'b12',name:'Витамин B12',crit:true},
+  {k:'vitD',name:'Витамин D',crit:true},{k:'iron',name:'Железо',crit:false},
+  {k:'calcium',name:'Кальций',crit:false},{k:'mag',name:'Магний',crit:false},
+  {k:'iod',name:'Йод',crit:false},{k:'zinc',name:'Цинк',crit:false},
+  {k:'sel',name:'Селен',crit:false},{k:'omega',name:'Омега-3 ДГК/ЭПК',crit:false},
+  {k:'protein',name:'Белок (полный)',crit:false},{k:'fiber',name:'Клетчатка',crit:false},
+  {k:'carbs',name:'Медл. углеводы',crit:false},{k:'antioxid',name:'Антиоксиданты',crit:false},
+  {k:'adapt',name:'Адаптогены',crit:false},
+];
+const WEIGHT={[F]:60,[P]:25,[N]:0,[NA]:0};
+
+const GAPS_DEF=[
+  {nutKey:'b12',name:'Витамин B12',baseSev:'crit',descBase:'Отсутствует в растениях. Без животных продуктов дефицит неизбежен.',descSolved:'Покрыт. B12 накапливается в печени — принимать регулярно.',solvers:['beef','salmon','pollock','egg','chicken','shrimp','crab','squid','octopus','trepang','urchin','b12sup'],partials:[],tips:['БАД B12 — если нет мяса/рыбы'],srcsLabel:{beef:'Говядина ✓',salmon:'Лосось ✓',pollock:'Минтай ✓',egg:'Яйцо ✓',chicken:'Курица ✓',shrimp:'Креветка ✓',crab:'Краб ✓',squid:'Кальмар ✓',octopus:'Осьминог ✓',trepang:'Трепанг (следы)',urchin:'Икра ежа (следы)',b12sup:'БАД B12 ✓'}},
+  {nutKey:'vitD',name:'Витамин D3',baseSev:'crit',descBase:'На Сахалине солнца мало 8 месяцев. Критический дефицит у большинства.',descSolved:'D3 присутствует. Зимой дополнительно рекомендован БАД 2000–4000 МЕ.',solvers:['salmon','fishoil','vitd3sup','sealoil'],partials:['egg','urchin','pollock'],tips:['Грибы на солнце → D2','D3 + K2 вместе'],srcsLabel:{salmon:'Лосось ✓',fishoil:'Рыбий жир ✓',vitd3sup:'БАД D3 ✓',sealoil:'Тюлений жир ✓',egg:'Яйцо (частично)',urchin:'Икра ежа (следы)',pollock:'Минтай (следы)'}},
+  {nutKey:'iron',name:'Гемовое железо',baseSev:'crit',descBase:'Растительное железо усваивается в 3–5× хуже. Критично для женщин.',descSolved:'Гемовое железо присутствует. Ешь рядом с витамином C для усиления.',solvers:['beef','octopus'],partials:['salmon','chicken','shrimp','crab','squid','trepang','urchin','pollock'],tips:['+ витамин C рядом'],srcsLabel:{beef:'Говядина ✓',octopus:'Осьминог ✓',salmon:'Лосось (частично)',chicken:'Курица (частично)',shrimp:'Креветка (частично)',crab:'Краб (частично)'}},
+  {nutKey:'protein',name:'Полный белок',baseSev:'part',descBase:'Растения дают неполный аминокислотный профиль.',descSolved:'Полноценный белок покрыт.',solvers:['beef','salmon','chicken','egg','trepang','urchin','shrimp','crab','squid','octopus','pollock'],partials:['hemp','lentil'],tips:['Конопля + чечевица вместе'],srcsLabel:{beef:'Говядина ✓',salmon:'Лосось ✓',chicken:'Курица ✓',egg:'Яйцо ✓',trepang:'Трепанг ✓',urchin:'Икра ежа ✓',shrimp:'Креветка ✓',hemp:'Конопля (частично)',lentil:'Чечевица (частично)'}},
+  {nutKey:'omega',name:'Омега-3 ДГК/ЭПК',baseSev:'part',descBase:'Растительная АЛК конвертируется лишь на ~5%. Норма 500 мг/день.',descSolved:'ДГК/ЭПК покрыты.',solvers:['salmon','fishoil','sealoil'],partials:['urchin','grape','trepang','shrimp','crab','squid','octopus','pollock'],tips:['Тюлений жир — уникальная DPA в добавок к DHA/EPA'],srcsLabel:{salmon:'Лосось ✓',fishoil:'Рыбий жир ✓',sealoil:'Тюлений жир ✓ (+ уникальная DPA)',urchin:'Икра ежа (частично)',grape:'Мор. виноград (частично)'}},
+  {nutKey:'calcium',name:'Кальций (усвоение)',baseSev:'part',descBase:'Кальций есть в растениях. Но без D3 усваивается плохо — замкнутый круг.',descSolved:'Кальций и D3 присутствуют. Избегай кофе рядом с приёмом.',solvers:['salmon','egg','vitd3sup','fishoil'],partials:['sesame','nettle','kelp','shrimp','crab'],tips:['D3 + K2','Кунжут/тахини ежедневно'],srcsLabel:{salmon:'Лосось + D3 ✓',egg:'Яйцо + D3',vitd3sup:'БАД D3 ✓',fishoil:'Рыбий жир + D3',sesame:'Кунжут (много Ca)',nettle:'Крапива (много Ca)',kelp:'Ламинария (много Ca)'}},
+  {nutKey:'carbs',name:'Медленные углеводы',baseSev:'part',descBase:'Мозгу нужно ~120 г глюкозы/день. Без круп рацион энергетически неполный.',descSolved:'Медленные углеводы покрыты.',solvers:['buckwheat','millet','rice'],partials:['lentil'],tips:['Гречка — лучший выбор (ГИ 54)'],srcsLabel:{buckwheat:'Гречка ✓',millet:'Пшено ✓',rice:'Рис (коричневый)',lentil:'Чечевица (частично)'}},
+  {nutKey:'zinc',name:'Цинк (биодоступность)',baseSev:'part',descBase:'В растениях цинк связан фитатами — усваивается в 2–3× хуже.',descSolved:'Цинк из животных продуктов — биодоступность высокая.',solvers:['beef','crab','urchin'],partials:['shrimp','squid','octopus','pollock','salmon','chicken','egg','pumpkin','hemp','sesame'],tips:['Замачивай семечки на ночь'],srcsLabel:{beef:'Говядина ✓',crab:'Краб ✓ (рекорд)',urchin:'Икра ежа ✓',shrimp:'Креветка (частично)',pumpkin:'Тыкв. семечки (частично)'}},
+  {nutKey:'mag',name:'Магний',baseSev:'part',descBase:'Стресс и кофе вымывают. Дефицит — спазмы, тревога, плохой сон.',descSolved:'Магний покрыт. Принимай вечером — усиливает сон.',solvers:['magnesium','buckwheat','hemp','pumpkin'],partials:['sesame','millet','lentil','nettle','kelp'],tips:['Глицинат/малат — лучшие формы'],srcsLabel:{magnesium:'БАД магний ✓',buckwheat:'Гречка ✓',hemp:'Конопля ✓',pumpkin:'Тыкв. семечки ✓',sesame:'Кунжут (частично)'}},
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const selected=new Set();       // keys of selected products
+const portions={};              // k -> actual amount entered by user
+let currentTab='products';
+let modalKey=null;
+let portionKey=null;            // which product is being portioned right now
+
+// ─── PRODUCTS TAB ────────────────────────────────────────────────────────────
+function renderProducts(){
+  const el=document.getElementById('productList'); el.innerHTML='';
+  groups.forEach(grp=>{
+    const prods=products.filter(p=>p.g===grp.id);
+    if(!prods.length) return;
+    const gh=document.createElement('div'); gh.className='grp-head';
+    gh.innerHTML=`<div class="grp-dot" style="background:${grp.color}"></div><span class="grp-name">${grp.label}</span><span class="grp-count">${prods.length}</span>`;
+    el.appendChild(gh);
+    const list=document.createElement('div'); list.className='prod-list';
+    prods.forEach(p=>{
+      const row=document.createElement('div');
+      const isSel=selected.has(p.k);
+      row.className='prod-row'+(isSel?' sel':'');
+      row.style.setProperty('--sel-color',grp.color);
+      const pc=getPC(p.k);
+      const amtLabel=isSel&&portions[p.k]!=null?`<span style="font-size:11px;font-weight:600;color:${grp.color}">${portions[p.k]} ${pc.unit}</span>`:'';
+      row.innerHTML=`<span class="prod-emoji">${p.icon}</span>
+        <div class="prod-text">
+          <div class="prod-name">${p.name} ${amtLabel}</div>
+          <div class="prod-dose">${p.dose}</div>
+        </div>
+        <div class="prod-check">✓</div>
+        <div class="prod-info-btn" data-k="${p.k}">ℹ</div>`;
+      row.querySelector('.prod-info-btn').addEventListener('click',e=>{e.stopPropagation();openModal(p.k);});
+      row.addEventListener('click',e=>{if(e.target.closest('.prod-info-btn')) return; openPortionDialog(p.k);});
+      list.appendChild(row);
+    });
+    el.appendChild(list);
+  });
+}
+
+// ─── PORTION DIALOG ──────────────────────────────────────────────────────────
+function openPortionDialog(k){
+  const p=products.find(x=>x.k===k); if(!p) return;
+  const grp=groups.find(g=>g.id===p.g);
+  const pc=getPC(k);
+  portionKey=k;
+  const isEdit=selected.has(k);
+  const currentVal=isEdit&&portions[k]!=null?portions[k]:pc.def;
+
+  document.getElementById('pEmoji').textContent=p.icon;
+  document.getElementById('pName').textContent=p.name;
+  document.getElementById('pRec').textContent='Рекомендуемая доза: '+p.dose;
+  document.getElementById('pLabel').textContent=
+    isEdit?'Измени количество или убери продукт из сегодняшнего рациона:':
+    'Сколько съешь сегодня?';
+  document.getElementById('pUnit').textContent=pc.unit;
+
+  const input=document.getElementById('pInput');
+  input.value=currentVal;
+  input.step=pc.step;
+
+  // presets
+  const presetsEl=document.getElementById('pPresets'); presetsEl.innerHTML='';
+  pc.presets.forEach(v=>{
+    const btn=document.createElement('button'); btn.className='portion-preset';
+    btn.textContent=v+' '+pc.unit;
+    if(v===currentVal) btn.classList.add('active-preset');
+    btn.addEventListener('click',()=>{
+      input.value=v;
+      presetsEl.querySelectorAll('.portion-preset').forEach(b=>b.classList.remove('active-preset'));
+      btn.classList.add('active-preset');
+    });
+    presetsEl.appendChild(btn);
+  });
+
+  // ± buttons
+  document.getElementById('pMinus').onclick=()=>{
+    const v=Math.max(0,parseFloat(input.value||0)-pc.step);
+    input.value=Math.round(v*10)/10;
+    syncPresetHighlight();
+  };
+  document.getElementById('pPlus').onclick=()=>{
+    const v=parseFloat(input.value||0)+pc.step;
+    input.value=Math.round(v*10)/10;
+    syncPresetHighlight();
+  };
+  input.addEventListener('input',syncPresetHighlight);
+
+  function syncPresetHighlight(){
+    const cur=parseFloat(input.value);
+    presetsEl.querySelectorAll('.portion-preset').forEach(b=>{
+      b.classList.toggle('active-preset',parseFloat(b.textContent)===cur);
+    });
+  }
+
+  // buttons
+  const btns=document.getElementById('pBtns'); btns.innerHTML='';
+  const cancelBtn=document.createElement('button'); cancelBtn.className='portion-cancel';
+  cancelBtn.textContent='Отмена'; cancelBtn.onclick=closePortionDialog;
+  btns.appendChild(cancelBtn);
+
+  if(isEdit){
+    const removeBtn=document.createElement('button'); removeBtn.className='portion-remove';
+    removeBtn.textContent='Убрать'; removeBtn.onclick=()=>{
+      selected.delete(k); delete portions[k];
+      closePortionDialog(); refreshAfterPortionChange();
+    };
+    btns.appendChild(removeBtn);
+  }
+
+  const confirmBtn=document.createElement('button'); confirmBtn.className='portion-confirm';
+  confirmBtn.style.background=grp.color;
+  confirmBtn.textContent=isEdit?'Обновить':'Добавить';
+  confirmBtn.onclick=()=>{
+    const val=parseFloat(document.getElementById('pInput').value);
+    if(!val||val<=0){ closePortionDialog(); return; }
+    selected.add(k);
+    portions[k]=val;
+    closePortionDialog();
+    refreshAfterPortionChange();
+  };
+  btns.appendChild(confirmBtn);
+
+  document.getElementById('portionOverlay').classList.add('open');
+  setTimeout(()=>input.focus(),100);
+}
+
+function closePortionDialog(){
+  document.getElementById('portionOverlay').classList.remove('open');
+  portionKey=null;
+}
+
+function refreshAfterPortionChange(){
+  renderProducts();
+  updateBadges();
+  if(currentTab==='analysis') renderAnalysis();
+  if(currentTab==='gaps') renderGapsTab();
+}
+
+// ─── ANALYSIS TAB ────────────────────────────────────────────────────────────
+function renderAnalysis(){
+  const el=document.getElementById('analysisContent'); el.innerHTML='';
+  if(!selected.size){
+    el.innerHTML='<div class="empty-state"><div class="big">📊</div><p>Выберите продукты во вкладке «Продукты»<br>и здесь появится анализ рациона</p></div>';
+    return;
+  }
+  const selProds=products.filter(p=>selected.has(p.k));
+  const scores=calcScores(selProds);
+
+  // Selected chips
+  const t1=document.createElement('div'); t1.className='section-title'; t1.textContent='Выбрано сегодня';
+  el.appendChild(t1);
+  const chips=document.createElement('div'); chips.className='sel-chips';
+  selProds.forEach(p=>{
+    const grp=groups.find(g=>g.id===p.g);
+    const pc=getPC(p.k);
+    const amt=portions[p.k]??pc.def;
+    const chip=document.createElement('div'); chip.className='sel-chip';
+    chip.style.cssText=`border-color:${grp.color}44;cursor:pointer`;
+    chip.title='Нажми чтобы изменить количество';
+    chip.innerHTML=`<span>${p.icon}</span><span>${p.name}</span><span style="font-size:11px;font-weight:600;color:${grp.color};margin-left:2px">${amt}${pc.unit}</span><span class="sel-chip-x" data-k="${p.k}">✕</span>`;
+    chip.addEventListener('click',e=>{
+      if(e.target.closest('.sel-chip-x')) return;
+      openPortionDialog(p.k);
+    });
+    chip.querySelector('.sel-chip-x').addEventListener('click',e=>{
+      e.stopPropagation();
+      selected.delete(p.k); delete portions[p.k];
+      document.querySelectorAll('.prod-row').forEach(r=>{
+        if(r.querySelector('.prod-info-btn')?.dataset.k===p.k) r.classList.remove('sel');
+      });
+      updateBadges(); renderAnalysis();
+    });
+    chips.appendChild(chip);
+  });
+  el.appendChild(chips);
+  const rb=document.createElement('button'); rb.className='reset-btn'; rb.textContent='Сбросить всё';
+  rb.onclick=()=>{
+    selected.clear();
+    Object.keys(portions).forEach(k=>delete portions[k]);
+    document.querySelectorAll('.prod-row').forEach(r=>r.classList.remove('sel'));
+    updateBadges();renderAnalysis();renderGapsTab();renderProducts();
+  };
+  el.appendChild(rb);
+
+  // Nutrient bars
+  const t2=document.createElement('div'); t2.className='section-title'; t2.textContent='Покрытие нутриентов';
+  el.appendChild(t2);
+  nutDefs.forEach(nd=>{
+    const pct=Math.min(100,scores[nd.k]||0);
+    const color=pct>=80?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+    const row=document.createElement('div'); row.className='nut-row';
+    row.innerHTML=`<div class="nut-top"><span class="nut-name">${nd.name}</span><span class="nut-pct" style="color:${color}">${pct}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>`;
+    el.appendChild(row);
+  });
+
+  // Suggestions
+  const sugs=getSuggestions(selProds,scores);
+  const t3=document.createElement('div'); t3.className='section-title'; t3.textContent='Что добавить для нормы';
+  el.appendChild(t3);
+  if(sugs.length===1&&sugs[0].allGood){
+    const ok=document.createElement('div');
+    ok.style.cssText='background:rgba(46,204,138,.1);border:1px solid rgba(46,204,138,.25);border-radius:12px;padding:16px;text-align:center';
+    ok.innerHTML='<div style="font-size:32px;margin-bottom:8px">🏆</div><div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:4px">Рацион на отлично!</div><div style="font-size:12px;color:var(--muted2);line-height:1.5">Все нутриенты покрыты на 80%+.<br>Так держать — организм скажет спасибо.</div>';
+    el.appendChild(ok);
+  } else {
+    sugs.forEach(s=>{
+      const card=document.createElement('div'); card.className='sug-card';
+      const head=document.createElement('div'); head.className='sug-head';
+      const ico=document.createElement('div'); ico.className='sug-ico'; ico.style.background=s.bg; ico.textContent=s.icon;
+      const ttl=document.createElement('div'); ttl.className='sug-ttl'; ttl.textContent=s.title;
+      head.appendChild(ico); head.appendChild(ttl); card.appendChild(head);
+      const txt=document.createElement('div'); txt.className='sug-txt'; txt.textContent=s.text; card.appendChild(txt);
+      if(s.alts&&s.alts.length){
+        const aw=document.createElement('div'); aw.className='sug-alts';
+        s.alts.forEach(a=>{
+          const btn=document.createElement('span'); btn.className='sug-alt';
+          btn.style.cssText=`background:${a.bg};color:${a.color};border:1px solid ${a.border}`;
+          btn.textContent=a.label;
+          btn.addEventListener('click',()=>{
+            openPortionDialog(a.key);
+          });
+          aw.appendChild(btn);
+        });
+        card.appendChild(aw);
+      }
+      el.appendChild(card);
+    });
+  }
+}
+
+// ─── GAPS TAB ────────────────────────────────────────────────────────────────
+function renderGapsTab(){
+  const el=document.getElementById('gapsContent'); el.innerHTML='';
+  const selProds=products.filter(p=>selected.has(p.k));
+  const scores=selected.size?calcScores(selProds):{};
+  const selKeys=new Set(selProds.map(p=>p.k));
+
+  const sub=document.createElement('div');
+  sub.style.cssText='font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5';
+  sub.textContent=selected.size?`Обновлено для твоего рациона (${selected.size} продуктов)`:'Выбери продукты во вкладке «Продукты» — панель обновится автоматически';
+  el.appendChild(sub);
+
+  GAPS_DEF.forEach(g=>{
+    const hasSolver=g.solvers.some(k=>selKeys.has(k));
+    const hasPartial=g.partials.some(k=>selKeys.has(k));
+    const score=scores[g.nutKey]||0;
+    let status,statusColor,statusLabel;
+    if(!selected.size){status='unknown';statusColor='var(--muted)';statusLabel='';}
+    else if(hasSolver&&score>=60){status='solved';statusColor='var(--green)';statusLabel='✓ Закрыт';}
+    else if(hasSolver||hasPartial||score>=30){status='partial';statusColor='var(--amber)';statusLabel='◑ Частично';}
+    else{status=g.baseSev==='crit'?'crit':'open';statusColor=g.baseSev==='crit'?'var(--red)':'var(--amber)';statusLabel=g.baseSev==='crit'?'✗ Критично':'✗ Не закрыт';}
+
+    const card=document.createElement('div'); card.className='gap-card '+status;
+    const top=document.createElement('div'); top.className='gap-top';
+    const left=document.createElement('div'); left.className='gap-left';
+    const dot=document.createElement('div'); dot.className='gap-dot';
+    dot.style.cssText=`background:${statusColor};box-shadow:${status!=='unknown'&&status!=='solved'?`0 0 6px ${statusColor}88`:'none'}`;
+    const name=document.createElement('div'); name.className='gap-nut'; name.textContent=g.name;
+    left.appendChild(dot); left.appendChild(name);
+    const badge=document.createElement('div'); badge.className='gap-badge';
+    badge.style.color=statusColor; badge.textContent=statusLabel;
+    top.appendChild(left); top.appendChild(badge); card.appendChild(top);
+
+    const desc=document.createElement('div'); desc.className='gap-desc';
+    desc.textContent=status==='solved'?g.descSolved:g.descBase; card.appendChild(desc);
+
+    const srcs=document.createElement('div'); srcs.className='gap-srcs';
+    if(selected.size){
+      [...g.solvers,...g.partials].filter(k=>selKeys.has(k)&&g.srcsLabel[k]).forEach(k=>{
+        const t=document.createElement('span'); t.className='gap-src gap-src-ok'; t.textContent=g.srcsLabel[k]; srcs.appendChild(t);
+      });
+      if(status!=='solved'){
+        g.solvers.filter(k=>!selKeys.has(k)).slice(0,3).forEach(k=>{
+          const p=products.find(x=>x.k===k); if(!p) return;
+          const t=document.createElement('span'); t.className='gap-src gap-src-tip'; t.textContent='+ '+p.name; srcs.appendChild(t);
+        });
+      }
+    } else {
+      g.solvers.slice(0,4).forEach(k=>{const p=products.find(x=>x.k===k);if(!p) return;const t=document.createElement('span');t.className='gap-src gap-src-tip';t.textContent=p.name;srcs.appendChild(t);});
+    }
+    g.tips.forEach(s=>{const t=document.createElement('span');t.className='gap-src gap-src-warn';t.textContent=s;srcs.appendChild(t);});
+    card.appendChild(srcs); el.appendChild(card);
+  });
+}
+
+// ─── LOGIC HELPERS ───────────────────────────────────────────────────────────
+function calcScores(prods){
+  const scores={};
+  nutDefs.forEach(nd=>{scores[nd.k]=0;});
+  prods.forEach(p=>{
+    const pc=getPC(p.k);
+    const actual=portions[p.k]??pc.def;
+    // ratio: how much they ate vs recommended dose (capped at 1.5 to avoid gaming)
+    const ratio=Math.min(1.5, actual/pc.def);
+    nutDefs.forEach(nd=>{
+      const v=p.nuts[nd.k]??NA;
+      if(v!==NA) scores[nd.k]+=(WEIGHT[v]||0)*ratio;
+    });
+  });
+  nutDefs.forEach(nd=>{scores[nd.k]=Math.min(100,Math.round(scores[nd.k]));});
+  return scores;
+}
+
+function getSuggestions(selProds,scores){
+  const selKeys=new Set(selProds.map(p=>p.k));
+  const suggestions=[];
+  function topFor(nutKey,count=3){
+    return products.filter(p=>!selKeys.has(p.k)&&(p.nuts[nutKey]===F||p.nuts[nutKey]===P))
+      .sort((a,b)=>(b.nuts[nutKey]||0)-(a.nuts[nutKey]||0)).slice(0,count)
+      .map(p=>({key:p.k,label:`${p.icon} ${p.name}`,bg:p.nuts[nutKey]===F?'rgba(46,204,138,.12)':'rgba(245,166,35,.1)',color:p.nuts[nutKey]===F?'#2ecc8a':'#f5a623',border:p.nuts[nutKey]===F?'rgba(46,204,138,.25)':'rgba(245,166,35,.2)'}));
+  }
+  const recs={b12:'Только в мясе и морепродуктах',vitD:'Лосось — лучший источник D3',iron:'Говядина — гемовое железо в 3–5× лучше',omega:'Лосось или рыбий жир закроют полностью',vitC:'Черемша, шиповник, облепиха — рекордсмены',calcium:'Есть в растениях, но нужен D3 для усвоения',protein:'Говядина, лосось, яйцо — полный профиль',carbs:'Гречка — лучший выбор по нутриентам',mag:'Гречка, конопля, тыквенные семечки',zinc:'Говядина, краб, икра ежа',sel:'Лосось, минтай, тыквенные семечки',iod:'Морская капуста — 5 г = суточная норма',fiber:'Гречка, лопух, чечевица',adapt:'Лимонник и элеутерококк — адаптогены Сахалина',antioxid:'Ягоды, облепиха, шиповник',vitA:'Крапива, черемша, облепиха',vitE:'Облепиха, конопля, тыквенные семечки',vitK:'Крапива, одуванчик',bvit:'Гречка, чечевица, минтай'};
+
+  // Check if all nutrients are well covered (>=80%)
+  const allGood=nutDefs.every(nd=>(scores[nd.k]||0)>=80);
+  if(allGood) return [{allGood:true}];
+
+  // Sort ALL nutrients by score ascending — show bottom 5
+  const sorted=nutDefs.map(nd=>({nd,pct:scores[nd.k]||0})).sort((a,b)=>a.pct-b.pct);
+  sorted.slice(0,5).forEach(({nd,pct})=>{
+    const alts=topFor(nd.k,4); if(!alts.length) return;
+    const isCrit=nd.crit||(pct<20);
+    suggestions.push({
+      icon:isCrit?'🔴':pct<60?'🟡':'✅',
+      bg:isCrit?'rgba(232,82,74,.12)':pct<60?'rgba(245,166,35,.1)':'rgba(46,204,138,.08)',
+      title:`${nd.name} — ${pct}%`,
+      text:pct>=80?`Хорошо покрыт. Можно усилить: ${recs[nd.k]||''}`:recs[nd.k]||'Разнообрази рацион',
+      alts
+    });
+  });
+
+  // D3 special reminder if not covered
+  if((scores['vitD']||0)<60&&!selKeys.has('vitd3sup')&&!selKeys.has('fishoil')&&!selKeys.has('salmon')&&!selKeys.has('sealoil'))
+    suggestions.push({icon:'☀️',bg:'rgba(250,204,21,.12)',title:'Витамин D — приоритет зимой',text:'На Сахалине самый массовый дефицит. Рыбий жир закрывает D3 и омега-3 сразу.',alts:topFor('vitD',3)});
+
+  return suggestions.slice(0,6);
+}
+
+// ─── TAB NAVIGATION ──────────────────────────────────────────────────────────
+function showTab(tab){
+  currentTab=tab;
+  ['products','analysis','gaps'].forEach(t=>{
+    document.getElementById('screen-'+t).style.display=t===tab?'':'none';
+    document.getElementById('btn-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='analysis') renderAnalysis();
+  if(tab==='gaps') renderGapsTab();
+}
+
+function updateBadges(){
+  const n=selected.size;
+  const badge=document.getElementById('topBadge');
+  badge.textContent=n?`${n} выбрано`:'Ничего не выбрано';
+  badge.classList.toggle('has-sel',n>0);
+
+  // critical gaps count
+  const selProds=products.filter(p=>selected.has(p.k));
+  const scores=n?calcScores(selProds):{};
+  const selKeys=new Set(selProds.map(p=>p.k));
+  const openCrit=GAPS_DEF.filter(g=>{
+    const hasSolver=g.solvers.some(k=>selKeys.has(k));
+    const score=scores[g.nutKey]||0;
+    return n>0&&g.baseSev==='crit'&&!(hasSolver&&score>=60);
+  }).length;
+  const bg=document.getElementById('badge-gaps');
+  bg.textContent=openCrit||'';
+  bg.style.display=openCrit?'block':'none';
+
+  const ba=document.getElementById('badge-analysis');
+  const lowCount=n?nutDefs.filter(nd=>(scores[nd.k]||0)<50).length:0;
+  ba.textContent=lowCount||'';
+  ba.style.display=lowCount?'block':'none';
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(k){
+  const p=products.find(x=>x.k===k); if(!p) return;
+  modalKey=k;
+  const grp=groups.find(g=>g.id===p.g);
+  document.getElementById('mBadge').textContent=grp.label;
+  document.getElementById('mBadge').style.cssText=`background:${grp.color}22;color:${grp.color};border:1px solid ${grp.color}44`;
+  document.getElementById('mName').textContent=p.name;
+  document.getElementById('mLatin').textContent=p.icon;
+  document.getElementById('mDose').textContent='Суточная доза: '+p.dose;
+  document.getElementById('mDesc').textContent=p.desc;
+  const ne=document.getElementById('mNuts'); ne.innerHTML='';
+  nutDefs.forEach(nd=>{const v=p.nuts[nd.k];if(v===F||v===P){const t=document.createElement('span');t.className='nt '+(v===F?'nt-full':'nt-part');t.textContent=(v===F?'✓ ':'◑ ')+nd.name;ne.appendChild(t);}});
+  document.getElementById('mUse').textContent=p.use;
+  const ut=document.getElementById('mUseTags'); ut.innerHTML='';
+  p.useTags.forEach(t=>{const s=document.createElement('span');s.className='use-tag';s.textContent=t;ut.appendChild(s);});
+  document.getElementById('mSeasonText').textContent=p.season;
+  const sb=document.getElementById('mSeasonBar'); sb.innerHTML='';
+  if(!p.seasonM.length){sb.innerHTML='<span style="font-size:12px;color:var(--muted)">Доступен круглый год</span>';}
+  else{MO.forEach((m,i)=>{const s=document.createElement('span');s.className='month'+(p.seasonM.includes(i)?' on-'+p.seasonType:'');s.textContent=m;sb.appendChild(s);});}
+  const ww=document.getElementById('mWarn'); ww.innerHTML='';
+  if(p.warn) ww.innerHTML=`<div class="msec"><div class="msec-title">Важно</div><div class="warn-box">⚠ ${p.warn}</div></div>`;
+  // add/remove button
+  const ab=document.getElementById('mAddBtn'); ab.innerHTML='';
+  const isSel=selected.has(k);
+  const btn=document.createElement('button');
+  btn.className='modal-add-btn '+(isSel?'remove':'add');
+  btn.textContent=isSel?'✎ Изменить количество':'+ Добавить в рацион';
+  btn.onclick=()=>{
+    closeModal();
+    setTimeout(()=>openPortionDialog(k),120);
+  };
+  ab.appendChild(btn);
+  document.getElementById('overlay').classList.add('open');
+  // swipe down to close
+  let startY=0;
+  const modal=document.getElementById('modal');
+  modal.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;},{passive:true});
+  modal.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-startY>80) closeModal();},{passive:true});
+}
+function closeOverlay(e){if(e.target===document.getElementById('overlay')) closeModal();}
+function closeModal(){document.getElementById('overlay').classList.remove('open');modalKey=null;}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderProducts();
+renderGapsTab();
+updateBadges();
+
+// ─── PWA SETUP ───────────────────────────────────────────────────────────────
+(function(){
+  // Generate icon via canvas (192x192 and 512x512)
+  function makeIcon(size){
+    const c=document.createElement('canvas');
+    c.width=c.height=size;
+    const ctx=c.getContext('2d');
+    // background
+    ctx.fillStyle='#0b0f18';
+    ctx.beginPath();
+    ctx.roundRect(0,0,size,size,size*0.22);
+    ctx.fill();
+    // green circle
+    const cx=size/2, cy=size*0.44, r=size*0.28;
+    const grd=ctx.createRadialGradient(cx,cy,r*0.1,cx,cy,r);
+    grd.addColorStop(0,'#2ecc8a');
+    grd.addColorStop(1,'#1a9e66');
+    ctx.fillStyle=grd;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    // leaf emoji substitute — just text
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${size*0.32}px serif`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('🌿',cx,cy);
+    // bottom text
+    ctx.fillStyle='#7a8fa8';
+    ctx.font=`${size*0.095}px sans-serif`;
+    ctx.fillText('РАЦИОН',cx,size*0.78);
+    ctx.fillStyle='#2ecc8a';
+    ctx.font=`bold ${size*0.095}px sans-serif`;
+    ctx.fillText('САХАЛИНА',cx,size*0.88);
+    return c.toDataURL('image/png');
+  }
+
+  const icon192=makeIcon(192);
+  const icon512=makeIcon(512);
+
+  // Inject apple touch icon
+  document.getElementById('apple-icon').href=icon192;
+
+  // Build manifest object and inject as blob URL
+  const manifest={
+    name:'Рацион Сахалина',
+    short_name:'Рацион',
+    description:'Персональный трекер питания — продукты Сахалина, нутриенты, суточные нормы',
+    start_url:'.',
+    display:'standalone',
+    orientation:'portrait',
+    background_color:'#0b0f18',
+    theme_color:'#0b0f18',
+    lang:'ru',
+    icons:[
+      {src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'},
+      {src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'},
+    ]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+
+  // Register service worker (inline via blob)
+  if('serviceWorker' in navigator){
+    const swCode=`
+const CACHE='racion-sakhalin-v1';
+const ASSETS=['/'];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));
+  self.skipWaiting();
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET') return;
+  e.respondWith(
+    fetch(e.request).then(r=>{
+      const rc=r.clone();
+      caches.open(CACHE).then(c=>c.put(e.request,rc));
+      return r;
+    }).catch(()=>caches.match(e.request).then(r=>r||new Response('Нет подключения',{status:503})))
+  );
+});
+`;
+    const swBlob=new Blob([swCode],{type:'application/javascript'});
+    const swUrl=URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl,{scope:'./'})
+      .then(()=>console.log('SW registered'))
+      .catch(e=>console.log('SW error',e));
+  }
+
+  // ─── INSTALL BANNER ──────────────────────────────────────────────────────
+  let deferredPrompt=null;
+  // Inject banner HTML
+  const banner=document.createElement('div');
+  banner.id='install-banner';
+  banner.style.cssText=`
+    display:none;position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));
+    left:12px;right:12px;z-index:400;
+    background:#1a2236;border:1px solid rgba(46,204,138,.35);border-radius:16px;
+    padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.5);
+    display:none;flex-direction:column;gap:10px;
+    animation:slideUp .25s ease;
+  `;
+  banner.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:28px">📲</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#dde4f0">Установить приложение</div>
+        <div style="font-size:11px;color:#5a6a85;margin-top:2px">Работает без интернета, как обычное приложение</div>
+      </div>
+      <button id="install-close" style="margin-left:auto;background:none;border:none;color:#5a6a85;font-size:20px;cursor:pointer;padding:4px">×</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button id="install-btn" style="flex:1;height:42px;border-radius:10px;border:none;background:#2ecc8a;color:#0b0f18;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Установить</button>
+      <button id="install-later" style="height:42px;padding:0 16px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#7a8fa8;font-size:13px;cursor:pointer;font-family:inherit">Позже</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    deferredPrompt=e;
+    setTimeout(()=>{ banner.style.display='flex'; },2000);
+  });
+
+  document.getElementById('install-btn').addEventListener('click',()=>{
+    banner.style.display='none';
+    if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; }
+  });
+  document.getElementById('install-close').addEventListener('click',()=>banner.style.display='none');
+  document.getElementById('install-later').addEventListener('click',()=>banner.style.display='none');
+
+  window.addEventListener('appinstalled',()=>{ banner.style.display='none'; console.log('App installed!'); });
+})();
+</script>
+</body>
+</html>
